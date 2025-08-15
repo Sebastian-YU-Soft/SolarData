@@ -6,78 +6,65 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.http.MediaType;
 
-/**
- * Main controller handling all public pages for MAXX Energy EDAP
- * Serves both view templates and API endpoints
- */
 @Controller
 public class AboutController {
 
-    // Redirect root to /home
+
     @GetMapping("/")
     public String redirectToHome() {
         return "redirect:/home";
     }
 
-    // Home page
+
     @GetMapping(value = "/home", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String homePage() {
         return getPageTemplate("Home · MAXX Energy EDAP", "home", getHomeContent());
     }
 
-    // About page
+
     @GetMapping(value = "/about", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String aboutPage() {
         return getPageTemplate("About · MAXX Energy EDAP", "about", getAboutContent());
     }
 
-    // Blog page
+
     @GetMapping(value = "/blog", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String blogPage() {
         return getPageTemplate("Blog · MAXX Energy EDAP", "blog", getBlogContent());
     }
 
-    // Data page
     @GetMapping(value = "/data", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String dataPage() {
         return getPageTemplate("Data Dashboard · MAXX Energy EDAP", "data", getDataContent());
     }
 
-    // User information page
     @GetMapping(value = "/user", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String userPage() {
         return getPageTemplate("User Profile · MAXX Energy EDAP", "user", getUserContent());
     }
 
-    // Contact page
     @GetMapping(value = "/contact", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String contactPage() {
         return getPageTemplate("Contact Us · MAXX Energy EDAP", "contact", getContactContent());
     }
 
-    // FAQ page
     @GetMapping(value = "/faq", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String faqPage() {
         return getPageTemplate("FAQ · MAXX Energy EDAP", "faq", getFaqContent());
     }
 
-    // Health check endpoint
     @GetMapping(value = "/health", produces = MediaType.TEXT_PLAIN_VALUE)
     @ResponseBody
     public String health() {
         return "OK";
     }
-
-    // =====================================================================
-    // CONTENT METHODS - Extracted for better organization
-    // =====================================================================
 
     private String getHomeContent() {
         return """
@@ -612,10 +599,6 @@ public class AboutController {
             """ + getFaqPageScript();
     }
 
-    // =====================================================================
-    // JAVASCRIPT METHODS - Extracted for better organization
-    // =====================================================================
-
     private String getHomePageScript() {
         return """
             <script>
@@ -764,10 +747,6 @@ public class AboutController {
             """;
     }
 
-    // =====================================================================
-    // TEMPLATE GENERATION - Main page template method
-    // =====================================================================
-
     /**
      * Generates the complete HTML page template with navigation and styling
      * @param title The page title
@@ -811,10 +790,6 @@ public class AboutController {
             </html>
             """;
     }
-
-    // =====================================================================
-    // HTML COMPONENTS - Header, Footer, Styles, Scripts
-    // =====================================================================
 
     private String getPageHeader(String activePage) {
         return """
@@ -1122,9 +1097,6 @@ public class AboutController {
             """;
     }
 
-    // =====================================================================
-    // UTILITY METHODS
-    // =====================================================================
 
     private String getActiveClass(String page, String activePage) {
         return page.equals(activePage) ? "class=\"active\"" : "";
