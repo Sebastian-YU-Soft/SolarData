@@ -1,9 +1,15 @@
 package com.maxxenergy.edap;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.MediaType;
 
+/**
+ * Main controller handling all public pages for MAXX Energy EDAP
+ * Serves both view templates and API endpoints
+ */
 @Controller
 public class AboutController {
 
@@ -14,10 +20,67 @@ public class AboutController {
     }
 
     // Home page
-    @GetMapping("/home")
+    @GetMapping(value = "/home", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String homePage() {
-        return getPageTemplate("Home · MAXX Energy EDAP", "home", """
+        return getPageTemplate("Home · MAXX Energy EDAP", "home", getHomeContent());
+    }
+
+    // About page
+    @GetMapping(value = "/about", produces = MediaType.TEXT_HTML_VALUE)
+    @ResponseBody
+    public String aboutPage() {
+        return getPageTemplate("About · MAXX Energy EDAP", "about", getAboutContent());
+    }
+
+    // Blog page
+    @GetMapping(value = "/blog", produces = MediaType.TEXT_HTML_VALUE)
+    @ResponseBody
+    public String blogPage() {
+        return getPageTemplate("Blog · MAXX Energy EDAP", "blog", getBlogContent());
+    }
+
+    // Data page
+    @GetMapping(value = "/data", produces = MediaType.TEXT_HTML_VALUE)
+    @ResponseBody
+    public String dataPage() {
+        return getPageTemplate("Data Dashboard · MAXX Energy EDAP", "data", getDataContent());
+    }
+
+    // User information page
+    @GetMapping(value = "/user", produces = MediaType.TEXT_HTML_VALUE)
+    @ResponseBody
+    public String userPage() {
+        return getPageTemplate("User Profile · MAXX Energy EDAP", "user", getUserContent());
+    }
+
+    // Contact page
+    @GetMapping(value = "/contact", produces = MediaType.TEXT_HTML_VALUE)
+    @ResponseBody
+    public String contactPage() {
+        return getPageTemplate("Contact Us · MAXX Energy EDAP", "contact", getContactContent());
+    }
+
+    // FAQ page
+    @GetMapping(value = "/faq", produces = MediaType.TEXT_HTML_VALUE)
+    @ResponseBody
+    public String faqPage() {
+        return getPageTemplate("FAQ · MAXX Energy EDAP", "faq", getFaqContent());
+    }
+
+    // Health check endpoint
+    @GetMapping(value = "/health", produces = MediaType.TEXT_PLAIN_VALUE)
+    @ResponseBody
+    public String health() {
+        return "OK";
+    }
+
+    // =====================================================================
+    // CONTENT METHODS - Extracted for better organization
+    // =====================================================================
+
+    private String getHomeContent() {
+        return """
             <section class="hero">
               <div class="wrap hero-grid">
                 <div>
@@ -65,29 +128,11 @@ public class AboutController {
               </section>
             </main>
             
-            <script>
-              async function loadHomeData() {
-                try {
-                  const response = await fetch('/api/public/data');
-                  const data = await response.json();
-                  document.getElementById('homeGeneration').textContent = data.generation.toFixed(2) + ' MW';
-                  document.getElementById('homeRevenue').textContent = '$' + data.revenue.toLocaleString();
-                } catch (error) {
-                  console.error('Error loading data:', error);
-                  document.getElementById('homeGeneration').textContent = 'N/A';
-                  document.getElementById('homeRevenue').textContent = 'N/A';
-                }
-              }
-              document.addEventListener('DOMContentLoaded', loadHomeData);
-            </script>
-            """);
+            """ + getHomePageScript();
     }
 
-    // About page (original content)
-    @GetMapping("/about")
-    @ResponseBody
-    public String aboutPage() {
-        return getPageTemplate("About · MAXX Energy EDAP", "about", """
+    private String getAboutContent() {
+        return """
             <section class="hero">
               <div class="wrap hero-grid">
                 <div>
@@ -162,14 +207,11 @@ public class AboutController {
                 </div>
               </section>
             </main>
-            """);
+            """;
     }
 
-    // Blog page
-    @GetMapping("/blog")
-    @ResponseBody
-    public String blogPage() {
-        return getPageTemplate("Blog · MAXX Energy EDAP", "blog", """
+    private String getBlogContent() {
+        return """
             <section class="hero-small">
               <div class="wrap">
                 <h1>MAXX Energy Blog</h1>
@@ -222,14 +264,11 @@ public class AboutController {
                 </div>
               </section>
             </main>
-            """);
+            """;
     }
 
-    // Data page
-    @GetMapping("/data")
-    @ResponseBody
-    public String dataPage() {
-        return getPageTemplate("Data Dashboard · MAXX Energy EDAP", "data", """
+    private String getDataContent() {
+        return """
             <section class="hero-small">
               <div class="wrap">
                 <h1>Solar Data Dashboard</h1>
@@ -272,75 +311,11 @@ public class AboutController {
               </section>
             </main>
             
-            <script>
-              async function loadDashboardData() {
-                try {
-                  const response = await fetch('/api/public/data');
-                  const data = await response.json();
-                  
-                  const container = document.getElementById('solarData');
-                  container.innerHTML = `
-                    <div class="dashboard-grid">
-                      <div class="data-card featured">
-                        <h3>${data.plantName}</h3>
-                        <div class="data-grid">
-                          <div class="stat">
-                            <div class="stat-value">${data.generation.toFixed(2)} MW</div>
-                            <div class="stat-label">Current Generation</div>
-                          </div>
-                          <div class="stat">
-                            <div class="stat-value">$${data.revenue.toLocaleString()}</div>
-                            <div class="stat-label">Total Revenue</div>
-                          </div>
-                          <div class="stat">
-                            <div class="stat-value">${(data.generation / 10 * 100).toFixed(1)}%</div>
-                            <div class="stat-label">Capacity Utilization</div>
-                          </div>
-                          <div class="stat">
-                            <div class="stat-value">${(data.generation * 0.8).toFixed(1)} MW</div>
-                            <div class="stat-label">Peak Today</div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div class="data-card">
-                        <h4>Performance Metrics</h4>
-                        <div class="metric-list">
-                          <div class="metric">
-                            <span class="metric-label">System Efficiency</span>
-                            <span class="metric-value good">98.5%</span>
-                          </div>
-                          <div class="metric">
-                            <span class="metric-label">Uptime</span>
-                            <span class="metric-value good">99.2%</span>
-                          </div>
-                          <div class="metric">
-                            <span class="metric-label">Maintenance Status</span>
-                            <span class="metric-value good">Optimal</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  `;
-                } catch (error) {
-                  console.error('Error loading solar data:', error);
-                  document.getElementById('solarData').innerHTML = 
-                    '<div class="data-card"><p class="muted">Unable to load solar data at this time.</p></div>';
-                }
-              }
-
-              document.addEventListener('DOMContentLoaded', loadDashboardData);
-              // Refresh data every 30 seconds
-              setInterval(loadDashboardData, 30000);
-            </script>
-            """);
+            """ + getDataPageScript();
     }
 
-    // User information page
-    @GetMapping("/user")
-    @ResponseBody
-    public String userPage() {
-        return getPageTemplate("User Profile · MAXX Energy EDAP", "user", """
+    private String getUserContent() {
+        return """
             <section class="hero-small">
               <div class="wrap">
                 <h1>User Profile</h1>
@@ -413,14 +388,11 @@ public class AboutController {
                 </div>
               </section>
             </main>
-            """);
+            """;
     }
 
-    // Contact page
-    @GetMapping("/contact")
-    @ResponseBody
-    public String contactPage() {
-        return getPageTemplate("Contact Us · MAXX Energy EDAP", "contact", """
+    private String getContactContent() {
+        return """
             <section class="hero-small">
               <div class="wrap">
                 <h1>Contact Us</h1>
@@ -524,33 +496,11 @@ public class AboutController {
               </section>
             </main>
             
-            <script>
-              document.getElementById('contactForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Simulate form submission
-                const submitBtn = e.target.querySelector('button[type="submit"]');
-                const originalText = submitBtn.textContent;
-                
-                submitBtn.textContent = 'Sending...';
-                submitBtn.disabled = true;
-                
-                setTimeout(() => {
-                  alert('Thank you for your message! We will get back to you soon.');
-                  e.target.reset();
-                  submitBtn.textContent = originalText;
-                  submitBtn.disabled = false;
-                }, 2000);
-              });
-            </script>
-            """);
+            """ + getContactPageScript();
     }
 
-    // FAQ page
-    @GetMapping("/faq")
-    @ResponseBody
-    public String faqPage() {
-        return getPageTemplate("FAQ · MAXX Energy EDAP", "faq", """
+    private String getFaqContent() {
+        return """
             <section class="hero-small">
               <div class="wrap">
                 <h1>Frequently Asked Questions</h1>
@@ -659,6 +609,125 @@ public class AboutController {
               </section>
             </main>
             
+            """ + getFaqPageScript();
+    }
+
+    // =====================================================================
+    // JAVASCRIPT METHODS - Extracted for better organization
+    // =====================================================================
+
+    private String getHomePageScript() {
+        return """
+            <script>
+              async function loadHomeData() {
+                try {
+                  const response = await fetch('/api/public/data');
+                  const data = await response.json();
+                  document.getElementById('homeGeneration').textContent = data.generation.toFixed(2) + ' MW';
+                  document.getElementById('homeRevenue').textContent = '$' + data.revenue.toLocaleString();
+                } catch (error) {
+                  console.error('Error loading data:', error);
+                  document.getElementById('homeGeneration').textContent = 'N/A';
+                  document.getElementById('homeRevenue').textContent = 'N/A';
+                }
+              }
+              document.addEventListener('DOMContentLoaded', loadHomeData);
+            </script>
+            """;
+    }
+
+    private String getDataPageScript() {
+        return """
+            <script>
+              async function loadDashboardData() {
+                try {
+                  const response = await fetch('/api/public/data');
+                  const data = await response.json();
+                  
+                  const container = document.getElementById('solarData');
+                  container.innerHTML = `
+                    <div class="dashboard-grid">
+                      <div class="data-card featured">
+                        <h3>${data.plantName}</h3>
+                        <div class="data-grid">
+                          <div class="stat">
+                            <div class="stat-value">${data.generation.toFixed(2)} MW</div>
+                            <div class="stat-label">Current Generation</div>
+                          </div>
+                          <div class="stat">
+                            <div class="stat-value">$${data.revenue.toLocaleString()}</div>
+                            <div class="stat-label">Total Revenue</div>
+                          </div>
+                          <div class="stat">
+                            <div class="stat-value">${(data.generation / 10 * 100).toFixed(1)}%</div>
+                            <div class="stat-label">Capacity Utilization</div>
+                          </div>
+                          <div class="stat">
+                            <div class="stat-value">${(data.generation * 0.8).toFixed(1)} MW</div>
+                            <div class="stat-label">Peak Today</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="data-card">
+                        <h4>Performance Metrics</h4>
+                        <div class="metric-list">
+                          <div class="metric">
+                            <span class="metric-label">System Efficiency</span>
+                            <span class="metric-value good">98.5%</span>
+                          </div>
+                          <div class="metric">
+                            <span class="metric-label">Uptime</span>
+                            <span class="metric-value good">99.2%</span>
+                          </div>
+                          <div class="metric">
+                            <span class="metric-label">Maintenance Status</span>
+                            <span class="metric-value good">Optimal</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                } catch (error) {
+                  console.error('Error loading solar data:', error);
+                  document.getElementById('solarData').innerHTML = 
+                    '<div class="data-card"><p class="muted">Unable to load solar data at this time.</p></div>';
+                }
+              }
+
+              document.addEventListener('DOMContentLoaded', loadDashboardData);
+              // Refresh data every 30 seconds
+              setInterval(loadDashboardData, 30000);
+            </script>
+            """;
+    }
+
+    private String getContactPageScript() {
+        return """
+            <script>
+              document.getElementById('contactForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Simulate form submission
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                
+                submitBtn.textContent = 'Sending...';
+                submitBtn.disabled = true;
+                
+                setTimeout(() => {
+                  alert('Thank you for your message! We will get back to you soon.');
+                  e.target.reset();
+                  submitBtn.textContent = originalText;
+                  submitBtn.disabled = false;
+                }, 2000);
+              });
+            </script>
+            """;
+    }
+
+    private String getFaqPageScript() {
+        return """
             <script>
               // FAQ Category switching
               document.querySelectorAll('.faq-cat-btn').forEach(btn => {
@@ -692,27 +761,149 @@ public class AboutController {
                 });
               });
             </script>
-            """);
+            """;
     }
 
-    // Health check endpoint
-    @GetMapping("/health")
-    @ResponseBody
-    public String health() {
-        return "OK";
-    }
+    // =====================================================================
+    // TEMPLATE GENERATION - Main page template method
+    // =====================================================================
 
-    // Helper method to generate consistent page template
+    /**
+     * Generates the complete HTML page template with navigation and styling
+     * @param title The page title
+     * @param activePage The currently active page for navigation highlighting
+     * @param content The main content to be inserted into the page
+     * @return Complete HTML page as string
+     */
     private String getPageTemplate(String title, String activePage, String content) {
+        return getHtmlDoctype() +
+                getHtmlHead(title) +
+                getHtmlBody(activePage, content);
+    }
+
+    private String getHtmlDoctype() {
+        return "<!doctype html>\n<html lang=\"en\">\n";
+    }
+
+    private String getHtmlHead(String title) {
         return """
-            <!doctype html>
-            <html lang="en">
             <head>
               <meta charset="utf-8" />
               <meta name="viewport" content="width=device-width, initial-scale=1" />
-              <title>""" + title + """
+              <title>""" + escapeHtml(title) + """
             </title>
-              <style>
+              """ + getPageStyles() + """
+            </head>
+            """;
+    }
+
+    private String getHtmlBody(String activePage, String content) {
+        return """
+            <body>
+              """ + getPageHeader(activePage) + """
+
+              """ + content + """
+
+              """ + getPageFooter() + """
+
+              """ + getPageScripts() + """
+            </body>
+            </html>
+            """;
+    }
+
+    // =====================================================================
+    // HTML COMPONENTS - Header, Footer, Styles, Scripts
+    // =====================================================================
+
+    private String getPageHeader(String activePage) {
+        return """
+            <header>
+                <div class="wrap nav">
+                  <div class="brand">
+                    <div class="brand-logo">ME</div>
+                    <span class="chip">MAXX Energy · EDAP</span>
+                  </div>
+                  
+                  <div class="main-nav">
+                    <nav class="nav-links" aria-label="Primary">
+                      <a href="/home" """ + getActiveClass("home", activePage) + """>Home</a>
+                      <a href="/about" """ + getActiveClass("about", activePage) + """>About</a>
+                      <a href="/blog" """ + getActiveClass("blog", activePage) + """>Blog</a>
+                      <a href="/data" """ + getActiveClass("data", activePage) + """>Data</a>
+                      <a href="/user" """ + getActiveClass("user", activePage) + """>Profile</a>
+                      <a href="/contact" """ + getActiveClass("contact", activePage) + """>Contact</a>
+                      <a href="/faq" """ + getActiveClass("faq", activePage) + """>FAQ</a>
+                    </nav>
+                    
+                    <div class="social-nav">
+                      <a href="https://linkedin.com/company/maxxenergy" title="LinkedIn">in</a>
+                      <a href="https://twitter.com/maxxenergy" title="Twitter">tw</a>
+                      <a href="https://youtube.com/@maxxenergy" title="YouTube">yt</a>
+                    </div>
+                  </div>
+                  
+                  <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+                  
+                  <div class="mobile-nav" id="mobileNav">
+                    <nav class="nav-links" aria-label="Mobile Primary">
+                      <a href="/home" """ + getActiveClass("home", activePage) + """>Home</a>
+                      <a href="/about" """ + getActiveClass("about", activePage) + """>About</a>
+                      <a href="/blog" """ + getActiveClass("blog", activePage) + """>Blog</a>
+                      <a href="/data" """ + getActiveClass("data", activePage) + """>Data</a>
+                      <a href="/user" """ + getActiveClass("user", activePage) + """>Profile</a>
+                      <a href="/contact" """ + getActiveClass("contact", activePage) + """>Contact</a>
+                      <a href="/faq" """ + getActiveClass("faq", activePage) + """>FAQ</a>
+                    </nav>
+                    <div class="social-nav">
+                      <a href="https://linkedin.com/company/maxxenergy">LinkedIn</a>
+                      <a href="https://twitter.com/maxxenergy">Twitter</a>
+                      <a href="https://youtube.com/@maxxenergy">YouTube</a>
+                    </div>
+                  </div>
+                </div>
+              </header>
+            """;
+    }
+
+    private String getPageFooter() {
+        return "<footer>© 2025 MAXX Energy · Enterprise Data Access Portal</footer>";
+    }
+
+    private String getPageScripts() {
+        return """
+            <script>
+                function toggleMobileMenu() {
+                  const mobileNav = document.getElementById('mobileNav');
+                  mobileNav.classList.toggle('open');
+                }
+
+                // Close mobile menu when clicking outside
+                document.addEventListener('click', function(e) {
+                  const mobileNav = document.getElementById('mobileNav');
+                  const mobileBtn = document.querySelector('.mobile-menu-btn');
+                  if (!mobileBtn.contains(e.target) && !mobileNav.contains(e.target)) {
+                    mobileNav.classList.remove('open');
+                  }
+                });
+
+                // Smooth scrolling for hash links
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                  anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                      target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  });
+                });
+            </script>
+            """;
+    }
+
+    private String getPageStyles() {
+        return """
+            <style>
                 :root{
                   --bg:#0b0c10; --card:#111217; --ink:#e8eaf0; --muted:#99a1b3; --line:#1f2330;
                   --brand:#e22323; --brand2:#8b1111; --accent:#2dd4bf; --success:#10b981; --warning:#f59e0b; --danger:#ef4444;
@@ -927,85 +1118,23 @@ public class AboutController {
                   .faq-categories{justify-content:center}
                   .actions{flex-direction:column}
                 }
-              </style>
-            </head>
-            <body>
-              <header>
-                <div class="wrap nav">
-                  <div class="brand">
-                    <div class="brand-logo">ME</div>
-                    <span class="chip">MAXX Energy · EDAP</span>
-                  </div>
-                  
-                  <div class="main-nav">
-                    <nav class="nav-links" aria-label="Primary">
-                      <a href="/home" """ + ("home".equals(activePage) ? "class=\"active\"" : "") + """>Home</a>
-                      <a href="/about" """ + ("about".equals(activePage) ? "class=\"active\"" : "") + """>About</a>
-                      <a href="/blog" """ + ("blog".equals(activePage) ? "class=\"active\"" : "") + """>Blog</a>
-                      <a href="/data" """ + ("data".equals(activePage) ? "class=\"active\"" : "") + """>Data</a>
-                      <a href="/user" """ + ("user".equals(activePage) ? "class=\"active\"" : "") + """>Profile</a>
-                      <a href="/contact" """ + ("contact".equals(activePage) ? "class=\"active\"" : "") + """>Contact</a>
-                      <a href="/faq" """ + ("faq".equals(activePage) ? "class=\"active\"" : "") + """>FAQ</a>
-                    </nav>
-                    
-                    <div class="social-nav">
-                      <a href="https://linkedin.com/company/maxxenergy" title="LinkedIn">in</a>
-                      <a href="https://twitter.com/maxxenergy" title="Twitter">tw</a>
-                      <a href="https://youtube.com/@maxxenergy" title="YouTube">yt</a>
-                    </div>
-                  </div>
-                  
-                  <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
-                  
-                  <div class="mobile-nav" id="mobileNav">
-                    <nav class="nav-links" aria-label="Mobile Primary">
-                      <a href="/home" """ + ("home".equals(activePage) ? "class=\"active\"" : "") + """>Home</a>
-                      <a href="/about" """ + ("about".equals(activePage) ? "class=\"active\"" : "") + """>About</a>
-                      <a href="/blog" """ + ("blog".equals(activePage) ? "class=\"active\"" : "") + """>Blog</a>
-                      <a href="/data" """ + ("data".equals(activePage) ? "class=\"active\"" : "") + """>Data</a>
-                      <a href="/user" """ + ("user".equals(activePage) ? "class=\"active\"" : "") + """>Profile</a>
-                      <a href="/contact" """ + ("contact".equals(activePage) ? "class=\"active\"" : "") + """>Contact</a>
-                      <a href="/faq" """ + ("faq".equals(activePage) ? "class=\"active\"" : "") + """>FAQ</a>
-                    </nav>
-                    <div class="social-nav">
-                      <a href="https://linkedin.com/company/maxxenergy">LinkedIn</a>
-                      <a href="https://twitter.com/maxxenergy">Twitter</a>
-                      <a href="https://youtube.com/@maxxenergy">YouTube</a>
-                    </div>
-                  </div>
-                </div>
-              </header>
-
-              """ + content + """
-
-              <footer>© 2025 MAXX Energy · Enterprise Data Access Portal</footer>
-
-              <script>
-                function toggleMobileMenu() {
-                  const mobileNav = document.getElementById('mobileNav');
-                  mobileNav.classList.toggle('open');
-                }
-
-                // Close mobile menu when clicking outside
-                document.addEventListener('click', function(e) {
-                  const mobileNav = document.getElementById('mobileNav');
-                  const mobileBtn = document.querySelector('.mobile-menu-btn');
-                  if (!mobileBtn.contains(e.target) && !mobileNav.contains(e.target)) {
-                    mobileNav.classList.remove('open');
-                  }
-                });
-
-                // Smooth scrolling for hash links
-                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                  anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                      target.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  });
-                });
-              </script>
-            </body>
-            </html>
+            </style>
             """;
+    }
+
+    // =====================================================================
+    // UTILITY METHODS
+    // =====================================================================
+
+    private String getActiveClass(String page, String activePage) {
+        return page.equals(activePage) ? "class=\"active\"" : "";
+    }
+
+    private String escapeHtml(String input) {
+        if (input == null) return "";
+        return input.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
