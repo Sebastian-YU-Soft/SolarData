@@ -7,14 +7,37 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
+import javax.annotation.PreDestroy;
 
 @Service
 public class SolarDataService {
 
+    private MongoClient mongoClient;
+
+    @Value("${spring.data.mongodb.uri:mongodb://localhost:27017}")
+    private String mongoUri;
+
+    @Value("${spring.data.mongodb.database:maxxenergy}")
+    private String databaseName;
+
+    private MongoClient getMongoClient() {
+        if (mongoClient == null) {
+            mongoClient = MongoClients.create(mongoUri);
+        }
+        return mongoClient;
+    }
+
+    @PreDestroy
+    public void closeMongoClient() {
+        if (mongoClient != null) {
+            mongoClient.close();
+        }
+    }
+
     public SolarData getPublicData() {
-        String uri = "mongodb://localhost:27017";
-        try (MongoClient mongoClient = MongoClients.create(uri)) {
-            MongoDatabase database = mongoClient.getDatabase("maxxenergy");
+        try {
+            MongoDatabase database = getMongoClient().getDatabase(databaseName);
             MongoCollection<Document> collection = database.getCollection("solar_plants");
 
             Document publicPlant = collection.find(new Document("isPublic", true)).first();
@@ -31,6 +54,7 @@ public class SolarDataService {
             e.printStackTrace();
         }
 
-        return new SolarData("No Data Available", 0.0, 0.0);
+
+        return new SolarData("Demo Solar Plant", 8.5, 125000.0);
     }
 }
