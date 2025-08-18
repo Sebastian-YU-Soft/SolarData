@@ -54,7 +54,7 @@ public class SolarDataService {
             e.printStackTrace();
         }
 
-
+        // Return default data if no public plant found or error occurs
         return new SolarData("Demo Solar Plant", 8.5, 125000.0);
     }
 }

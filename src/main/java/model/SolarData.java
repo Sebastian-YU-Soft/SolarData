@@ -1,4 +1,4 @@
-package model;
+package com.maxxenergy.edap.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
