@@ -9,12 +9,10 @@ import org.springframework.http.MediaType;
 @Controller
 public class AboutController {
 
-
     @GetMapping("/")
     public String redirectToHome() {
         return "redirect:/home";
     }
-
 
     @GetMapping(value = "/home", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
@@ -22,13 +20,11 @@ public class AboutController {
         return getPageTemplate("Home · MAXX Energy EDAP", "home", getHomeContent());
     }
 
-
     @GetMapping(value = "/about", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String aboutPage() {
         return getPageTemplate("About · MAXX Energy EDAP", "about", getAboutContent());
     }
-
 
     @GetMapping(value = "/blog", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
@@ -1097,7 +1093,6 @@ public class AboutController {
             """;
     }
 
-
     private String getActiveClass(String page, String activePage) {
         return page.equals(activePage) ? "class=\"active\"" : "";
     }
@@ -1110,3 +1105,4 @@ public class AboutController {
                 .replace("\"", "&quot;")
                 .replace("'", "&#39;");
     }
+}
