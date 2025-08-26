@@ -1,4 +1,4 @@
-package com.maxxenergy.edap;
+package com.maxxenergy.edap.services;
 
 import com.maxxenergy.edap.model.SolarData;
 import com.mongodb.client.MongoClient;

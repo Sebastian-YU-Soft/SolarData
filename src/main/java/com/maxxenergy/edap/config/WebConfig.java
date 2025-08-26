@@ -1,4 +1,4 @@
-package config;
+package com.maxxenergy.edap.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
