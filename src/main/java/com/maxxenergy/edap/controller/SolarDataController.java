@@ -20,4 +20,9 @@ public class SolarDataController {
         SolarData data = solarDataService.getPublicData();
         return ResponseEntity.ok(data);
     }
+
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("OK");
+    }
 }
