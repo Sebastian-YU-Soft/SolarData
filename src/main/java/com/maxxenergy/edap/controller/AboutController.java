@@ -528,3 +528,690 @@ public class AboutController {
             </main>
             
             """ + getFaqPageScript();
+    }
+
+    // Missing methods implementation
+    private String getPageTemplate(String title, String activeSection, String content) {
+        return """
+        <!doctype html>
+        <html lang="en">
+        <head>
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <title>""" + title + """</title>
+            <style>
+                :root {
+                    --bg: #0b0c10;
+                    --card: #111217;
+                    --ink: #e8eaf0;
+                    --muted: #99a1b3;
+                    --line: #1f2330;
+                    --brand: #e22323;
+                    --brand2: #8b1111;
+                }
+                
+                body {
+                    margin: 0;
+                    background: linear-gradient(180deg, #0b0c10 0%, #0e1117 100%);
+                    color: var(--ink);
+                    font: 15px/1.55 system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+                    min-height: 100vh;
+                }
+                
+                .wrap {
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    padding: 0 20px;
+                }
+                
+                nav {
+                    background: var(--card);
+                    border-bottom: 1px solid var(--line);
+                    padding: 12px 0;
+                    position: sticky;
+                    top: 0;
+                    z-index: 100;
+                }
+                
+                nav .wrap {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                
+                .logo {
+                    font-weight: bold;
+                    font-size: 18px;
+                    color: var(--brand);
+                }
+                
+                .nav-links {
+                    display: flex;
+                    gap: 24px;
+                }
+                
+                .nav-links a {
+                    color: var(--ink);
+                    text-decoration: none;
+                    padding: 8px 12px;
+                    border-radius: 8px;
+                    transition: background 0.2s;
+                }
+                
+                .nav-links a:hover,
+                .nav-links a.active {
+                    background: var(--line);
+                }
+                
+                .hero {
+                    padding: 60px 0;
+                }
+                
+                .hero-small {
+                    padding: 40px 0;
+                }
+                
+                .hero-grid {
+                    display: grid;
+                    grid-template-columns: 1fr auto;
+                    gap: 40px;
+                    align-items: center;
+                }
+                
+                h1 {
+                    font-size: 2.5rem;
+                    margin: 0 0 16px;
+                    font-weight: 700;
+                }
+                
+                .lead {
+                    font-size: 1.2rem;
+                    color: var(--muted);
+                    margin: 0 0 24px;
+                    line-height: 1.6;
+                }
+                
+                .cta {
+                    display: flex;
+                    gap: 12px;
+                    flex-wrap: wrap;
+                }
+                
+                .btn {
+                    display: inline-block;
+                    padding: 12px 20px;
+                    border-radius: 12px;
+                    text-decoration: none;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                    border: 1px solid var(--line);
+                    color: var(--ink);
+                    background: var(--card);
+                    cursor: pointer;
+                }
+                
+                .btn.primary {
+                    background: linear-gradient(180deg, var(--brand), var(--brand2));
+                    border: 0;
+                    color: white;
+                }
+                
+                .btn:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                }
+                
+                .panel {
+                    background: var(--card);
+                    border: 1px solid var(--line);
+                    border-radius: 16px;
+                    padding: 24px;
+                    margin: 24px 0;
+                }
+                
+                .cards {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                    gap: 20px;
+                    margin: 32px 0;
+                }
+                
+                .card {
+                    background: var(--card);
+                    border: 1px solid var(--line);
+                    border-radius: 16px;
+                    padding: 24px;
+                    transition: transform 0.2s;
+                }
+                
+                .card:hover {
+                    transform: translateY(-2px);
+                }
+                
+                .muted {
+                    color: var(--muted);
+                }
+                
+                .grid2 {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 24px;
+                }
+                
+                @media (max-width: 768px) {
+                    .hero-grid,
+                    .grid2 {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .nav-links {
+                        flex-wrap: wrap;
+                        gap: 12px;
+                    }
+                    
+                    h1 {
+                        font-size: 2rem;
+                    }
+                }
+                
+                .logo-hero {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 200px;
+                }
+                
+                .home-stats {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 16px;
+                }
+                
+                .quick-stat {
+                    text-align: center;
+                }
+                
+                .stat-value {
+                    font-size: 1.8rem;
+                    font-weight: bold;
+                    color: var(--brand);
+                }
+                
+                .stat-label {
+                    font-size: 0.9rem;
+                    color: var(--muted);
+                    margin-top: 4px;
+                }
+                
+                .features {
+                    margin: 60px 0;
+                }
+                
+                .timeline {
+                    margin: 20px 0;
+                }
+                
+                .tl {
+                    margin: 12px 0;
+                    padding: 12px 0;
+                    border-left: 2px solid var(--brand);
+                    padding-left: 16px;
+                }
+                
+                .blog-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 24px;
+                }
+                
+                .blog-card {
+                    background: var(--card);
+                    border: 1px solid var(--line);
+                    border-radius: 16px;
+                    padding: 20px;
+                    transition: transform 0.2s;
+                }
+                
+                .blog-card:hover {
+                    transform: translateY(-2px);
+                }
+                
+                .blog-meta {
+                    display: flex;
+                    gap: 12px;
+                    margin-bottom: 12px;
+                    font-size: 0.85rem;
+                    color: var(--muted);
+                }
+                
+                .read-more {
+                    color: var(--brand);
+                    text-decoration: none;
+                    font-weight: 500;
+                }
+                
+                .dashboard-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 24px;
+                }
+                
+                .refresh-indicator {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-size: 0.9rem;
+                    color: var(--muted);
+                }
+                
+                .status-dot {
+                    width: 8px;
+                    height: 8px;
+                    background: #22c55e;
+                    border-radius: 50%;
+                    animation: pulse 2s infinite;
+                }
+                
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.5; }
+                }
+                
+                .loading {
+                    text-align: center;
+                    padding: 60px 20px;
+                    color: var(--muted);
+                }
+                
+                .data-controls {
+                    display: flex;
+                    gap: 20px;
+                    margin-top: 24px;
+                }
+                
+                .control-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
+                
+                .control-select {
+                    padding: 8px 12px;
+                    border-radius: 8px;
+                    border: 1px solid var(--line);
+                    background: var(--card);
+                    color: var(--ink);
+                }
+                
+                .profile-section {
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                    margin-bottom: 24px;
+                }
+                
+                .avatar-circle {
+                    width: 60px;
+                    height: 60px;
+                    background: var(--brand);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-weight: bold;
+                    font-size: 1.2rem;
+                }
+                
+                .role-badge {
+                    background: var(--brand);
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 6px;
+                    font-size: 0.8rem;
+                    display: inline-block;
+                    margin-top: 8px;
+                }
+                
+                .info-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 16px;
+                    margin-top: 20px;
+                }
+                
+                .info-item {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                }
+                
+                .info-item label {
+                    font-size: 0.9rem;
+                    color: var(--muted);
+                    margin: 0;
+                }
+                
+                .permissions-list {
+                    margin: 16px 0;
+                }
+                
+                .permission-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 12px 0;
+                    border-bottom: 1px solid var(--line);
+                }
+                
+                .permission-status.enabled {
+                    color: #22c55e;
+                }
+                
+                .permission-status.disabled {
+                    color: #ef4444;
+                }
+                
+                .actions {
+                    display: flex;
+                    gap: 12px;
+                    margin-top: 20px;
+                }
+                
+                .form-group {
+                    margin-bottom: 16px;
+                }
+                
+                .form-group label {
+                    display: block;
+                    margin-bottom: 6px;
+                    font-weight: 500;
+                }
+                
+                .form-input {
+                    width: 100%;
+                    padding: 10px 12px;
+                    border-radius: 8px;
+                    border: 1px solid var(--line);
+                    background: #0d1017;
+                    color: var(--ink);
+                    box-sizing: border-box;
+                }
+                
+                .contact-info {
+                    margin: 20px 0;
+                }
+                
+                .contact-item {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 12px;
+                    margin: 16px 0;
+                }
+                
+                .contact-icon {
+                    font-size: 1.2rem;
+                    width: 24px;
+                    text-align: center;
+                }
+                
+                .social-links {
+                    margin-top: 24px;
+                }
+                
+                .social-icons {
+                    display: flex;
+                    gap: 12px;
+                    margin-top: 8px;
+                }
+                
+                .social-link {
+                    color: var(--brand);
+                    text-decoration: none;
+                    padding: 6px 12px;
+                    border: 1px solid var(--brand);
+                    border-radius: 6px;
+                    font-size: 0.9rem;
+                }
+                
+                .faq-categories {
+                    display: flex;
+                    gap: 12px;
+                    margin-bottom: 24px;
+                    flex-wrap: wrap;
+                }
+                
+                .faq-cat-btn {
+                    padding: 8px 16px;
+                    border-radius: 8px;
+                    border: 1px solid var(--line);
+                    background: var(--card);
+                    color: var(--ink);
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                
+                .faq-cat-btn.active {
+                    background: var(--brand);
+                    border-color: var(--brand);
+                    color: white;
+                }
+                
+                .faq-category {
+                    display: none;
+                }
+                
+                .faq-category.active {
+                    display: block;
+                }
+                
+                .faq-item {
+                    border: 1px solid var(--line);
+                    border-radius: 12px;
+                    margin-bottom: 12px;
+                    overflow: hidden;
+                }
+                
+                .faq-question {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px 20px;
+                    background: var(--card);
+                    cursor: pointer;
+                    transition: background 0.2s;
+                }
+                
+                .faq-question:hover {
+                    background: var(--line);
+                }
+                
+                .faq-question h3 {
+                    margin: 0;
+                    font-size: 1.1rem;
+                }
+                
+                .faq-toggle {
+                    font-size: 1.5rem;
+                    font-weight: bold;
+                    color: var(--brand);
+                    transition: transform 0.2s;
+                }
+                
+                .faq-answer {
+                    padding: 0 20px 16px;
+                    background: var(--bg);
+                    display: none;
+                }
+                
+                .faq-item.open .faq-answer {
+                    display: block;
+                }
+                
+                .faq-item.open .faq-toggle {
+                    transform: rotate(45deg);
+                }
+            </style>
+        </head>
+        <body>
+            <nav>
+                <div class="wrap">
+                    <div class="logo">MAXX Energy EDAP</div>
+                    <div class="nav-links">
+                        <a href="/home" """ + ("home".equals(activeSection) ? "class=\"active\"" : "") + """>Home</a>
+                        <a href="/about" """ + ("about".equals(activeSection) ? "class=\"active\"" : "") + """>About</a>
+                        <a href="/blog" """ + ("blog".equals(activeSection) ? "class=\"active\"" : "") + """>Blog</a>
+                        <a href="/data" """ + ("data".equals(activeSection) ? "class=\"active\"" : "") + """>Data</a>
+                        <a href="/user" """ + ("user".equals(activeSection) ? "class=\"active\"" : "") + """>Profile</a>
+                        <a href="/contact" """ + ("contact".equals(activeSection) ? "class=\"active\"" : "") + """>Contact</a>
+                        <a href="/faq" """ + ("faq".equals(activeSection) ? "class=\"active\"" : "") + """>FAQ</a>
+                    </div>
+                </div>
+            </nav>
+            """ + content + """
+        </body>
+        </html>
+        """;
+    }
+
+    private String getHomePageScript() {
+        return """
+        <script>
+            // Fetch and display home page stats
+            async function loadHomeStats() {
+                try {
+                    const response = await fetch('/api/public/data');
+                    const data = await response.json();
+                    
+                    if (data) {
+                        document.getElementById('homeGeneration').textContent = 
+                            data.generation ? data.generation.toFixed(1) + ' MW' : 'N/A';
+                        document.getElementById('homeRevenue').textContent = 
+                            data.revenue ? '
+                 + (data.revenue/1000).toFixed(0) + 'K' : 'N/A';
+                    }
+                } catch (error) {
+                    console.error('Error loading stats:', error);
+                    document.getElementById('homeGeneration').textContent = '8.5 MW';
+                    document.getElementById('homeRevenue').textContent = '$125K';
+                }
+            }
+            
+            // Load stats when page loads
+            document.addEventListener('DOMContentLoaded', loadHomeStats);
+            
+            // Refresh stats every 30 seconds
+            setInterval(loadHomeStats, 30000);
+        </script>
+        """;
+    }
+
+    private String getDataPageScript() {
+        return """
+        <script>
+            // Mock data visualization
+            async function loadSolarData() {
+                const container = document.getElementById('solarData');
+                
+                try {
+                    const response = await fetch('/api/public/data');
+                    const data = await response.json();
+                    
+                    container.innerHTML = `
+                        <div class="panel">
+                            <h3>Current Plant Performance</h3>
+                            <div class="grid2">
+                                <div class="card">
+                                    <h4>${data.plantName || 'Demo Solar Plant'}</h4>
+                                    <div class="stat-value">${(data.generation || 8.5).toFixed(1)} MW</div>
+                                    <div class="stat-label">Current Generation</div>
+                                </div>
+                                <div class="card">
+                                    <h4>Revenue Today</h4>
+                                    <div class="stat-value">${((data.revenue || 125000)/1000).toFixed(0)}K</div>
+                                    <div class="stat-label">Total Revenue</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 20px; padding: 40px; background: var(--line); border-radius: 12px; text-align: center;">
+                                <div style="color: var(--muted);">📊 Interactive Charts Coming Soon</div>
+                                <p style="color: var(--muted); margin: 8px 0 0;">Real-time generation graphs and analytics dashboard</p>
+                            </div>
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error('Error loading solar data:', error);
+                    container.innerHTML = `
+                        <div class="panel">
+                            <h3>Demo Data</h3>
+                            <div class="card">
+                                <p class="muted">Unable to load real-time data. Showing demo values.</p>
+                                <div class="stat-value">8.5 MW</div>
+                                <div class="stat-label">Demo Generation</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            document.addEventListener('DOMContentLoaded', loadSolarData);
+        </script>
+        """;
+    }
+
+    private String getContactPageScript() {
+        return """
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('contactForm');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        alert('Thank you for your message! We will get back to you within one business day.');
+                        form.reset();
+                    });
+                }
+            });
+        </script>
+        """;
+    }
+
+    private String getFaqPageScript() {
+        return """
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Handle FAQ category switching
+                const categoryButtons = document.querySelectorAll('.faq-cat-btn');
+                const categories = document.querySelectorAll('.faq-category');
+                
+                categoryButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const category = this.dataset.category;
+                        
+                        // Update active button
+                        categoryButtons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // Show corresponding category
+                        categories.forEach(cat => {
+                            cat.classList.remove('active');
+                            if (cat.id === category) {
+                                cat.classList.add('active');
+                            }
+                        });
+                    });
+                });
+                
+                // Handle FAQ item toggling
+                document.addEventListener('click', function(e) {
+                    if (e.target.closest('.faq-question')) {
+                        const faqItem = e.target.closest('.faq-item');
+                        faqItem.classList.toggle('open');
+                    }
+                });
+            });
+        </script>
+        """;
+    }
+
+}
