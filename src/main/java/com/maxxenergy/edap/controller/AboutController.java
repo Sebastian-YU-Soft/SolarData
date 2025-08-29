@@ -681,5 +681,337 @@ public class AboutController {
         </script>
         """;
     }
+    // Navigation to the standalone data input page
+    @GetMapping(value = "/data-input-info", produces = MediaType.TEXT_HTML_VALUE)
+    @ResponseBody
+    public String dataInputInfoPage() {
+        return getPageTemplate("Data Input · MAXX Energy EDAP", "data-input", getDataInputInfoContent());
+    }
+
+    // Method to generate content for data input information page
+    private String getDataInputInfoContent() {
+        return """
+        <section class="hero">
+            <div class="wrap hero-grid">
+                <div>
+                    <h1>Solar Data Input & Analytics</h1>
+                    <p class="lead">
+                        Input your solar plant data and visualize performance metrics with interactive charts. 
+                        Track generation, efficiency, and revenue in real-time.
+                    </p>
+                    <div class="cta">
+                        <a class="btn primary" href="/data-input">Launch Data Input Tool</a>
+                        <a class="btn" href="/data">View Public Data</a>
+                        <a class="btn" href="/register">Create Account</a>
+                    </div>
+                </div>
+                <div class="logo-hero panel">
+                    <div class="home-stats">
+                        <div class="quick-stat">
+                            <div class="stat-value">📊</div>
+                            <div class="stat-label">Interactive Charts</div>
+                        </div>
+                        <div class="quick-stat">
+                            <div class="stat-value">⚡</div>
+                            <div class="stat-label">Real-time Input</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <main class="wrap">
+            <section class="features">
+                <h2>Data Input Features</h2>
+                <div class="grid2" style="margin-top: 20px;">
+                    <div class="panel">
+                        <h3>Input Parameters</h3>
+                        <ul>
+                            <li><strong>Plant Information:</strong> Name and capacity details</li>
+                            <li><strong>Generation Data:</strong> Current power output in MW</li>
+                            <li><strong>Efficiency Metrics:</strong> Performance percentage tracking</li>
+                            <li><strong>Environmental Data:</strong> Temperature and solar irradiance</li>
+                            <li><strong>Financial Data:</strong> Revenue generation tracking</li>
+                            <li><strong>Timestamp:</strong> Automatic data entry timestamping</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="panel">
+                        <h3>Visualization Features</h3>
+                        <ul>
+                            <li><strong>Real-time Charts:</strong> Interactive Chart.js visualizations</li>
+                            <li><strong>Historical Trends:</strong> View your last 10 data entries</li>
+                            <li><strong>Multi-axis Graphs:</strong> Generation vs efficiency analysis</li>
+                            <li><strong>Responsive Design:</strong> Works on mobile and desktop</li>
+                            <li><strong>Data Validation:</strong> Input validation and error handling</li>
+                            <li><strong>Auto-refresh:</strong> Charts update automatically after submission</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="features" style="margin-top: 30px;">
+                <div class="cards">
+                    <div class="card">
+                        <h3>📈 Performance Tracking</h3>
+                        <p class="muted">Monitor solar plant performance over time with detailed metrics including generation capacity, efficiency rates, and environmental factors affecting output.</p>
+                    </div>
+                    <div class="card">
+                        <h3>🔒 Secure Storage</h3>
+                        <p class="muted">All data entries are securely stored in MongoDB with user-specific access controls. Your data remains private and accessible only to you.</p>
+                    </div>
+                    <div class="card">
+                        <h3>📊 Interactive Analysis</h3>
+                        <p class="muted">Visualize trends and patterns in your solar data with dynamic charts that help identify optimization opportunities and performance insights.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="features" style="margin-top: 30px;">
+                <div class="panel">
+                    <h2>Getting Started</h2>
+                    <div class="timeline">
+                        <div class="tl"><strong>Step 1</strong> — Create an account or log in to access the data input feature</div>
+                        <div class="tl"><strong>Step 2</strong> — Navigate to the data input tool and enter your solar plant information</div>
+                        <div class="tl"><strong>Step 3</strong> — Submit data entries and watch your performance charts update in real-time</div>
+                        <div class="tl"><strong>Step 4</strong> — Analyze trends and optimize your solar plant operations based on the insights</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        """;
+    }
+
+    // Update your existing getPageTemplate method to fix the formatting issue
+    private String getPageTemplate(String title, String activeSection, String content) {
+        return """
+            <!doctype html>
+            <html lang="en">
+            <head>
+                <meta charset="utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <title>%s</title>
+                <style>
+                    :root {
+                        --bg: #0b0c10;
+                        --card: #111217;
+                        --ink: #e8eaf0;
+                        --muted: #99a1b3;
+                        --line: #1f2330;
+                        --brand: #e22323;
+                        --brand2: #8b1111;
+                    }
+                    
+                    body {
+                        margin: 0;
+                        background: linear-gradient(180deg, #0b0c10 0%, #0e1117 100%);
+                        color: var(--ink);
+                        font: 15px/1.55 system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                    }
+                    
+                    .wrap {
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        padding: 0 20px;
+                    }
+                    
+                    .hero {
+                        padding: 60px 0;
+                        background: var(--card);
+                        border-bottom: 1px solid var(--line);
+                    }
+                    
+                    .hero-grid {
+                        display: grid;
+                        grid-template-columns: 2fr 1fr;
+                        gap: 40px;
+                        align-items: center;
+                    }
+                    
+                    .hero h1 {
+                        margin: 0 0 20px;
+                        font-size: 2.5em;
+                        font-weight: 700;
+                    }
+                    
+                    .lead {
+                        color: var(--muted);
+                        font-size: 1.1em;
+                        line-height: 1.6;
+                        margin-bottom: 30px;
+                    }
+                    
+                    .cta {
+                        display: flex;
+                        gap: 15px;
+                        flex-wrap: wrap;
+                    }
+                    
+                    .btn {
+                        padding: 12px 20px;
+                        border-radius: 12px;
+                        border: 1px solid var(--line);
+                        text-decoration: none;
+                        color: var(--ink);
+                        cursor: pointer;
+                        background: var(--card);
+                        transition: all 0.2s;
+                    }
+                    
+                    .btn.primary {
+                        background: linear-gradient(180deg, var(--brand), var(--brand2));
+                        border: 0;
+                        color: white;
+                    }
+                    
+                    .btn:hover {
+                        transform: translateY(-1px);
+                    }
+                    
+                    .panel {
+                        background: var(--card);
+                        border: 1px solid var(--line);
+                        border-radius: 18px;
+                        padding: 25px;
+                    }
+                    
+                    .logo-hero {
+                        text-align: center;
+                    }
+                    
+                    .home-stats {
+                        display: flex;
+                        gap: 20px;
+                        justify-content: center;
+                    }
+                    
+                    .quick-stat {
+                        text-align: center;
+                    }
+                    
+                    .stat-value {
+                        font-size: 2em;
+                        font-weight: bold;
+                        margin-bottom: 5px;
+                    }
+                    
+                    .stat-label {
+                        color: var(--muted);
+                        font-size: 0.9em;
+                    }
+                    
+                    .features {
+                        margin: 40px 0;
+                    }
+                    
+                    .features h2 {
+                        margin-bottom: 20px;
+                    }
+                    
+                    .grid2 {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 30px;
+                    }
+                    
+                    .cards {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                        gap: 25px;
+                        margin-top: 20px;
+                    }
+                    
+                    .card {
+                        background: var(--card);
+                        border: 1px solid var(--line);
+                        border-radius: 18px;
+                        padding: 25px;
+                    }
+                    
+                    .card h3 {
+                        margin: 0 0 15px;
+                        font-size: 1.2em;
+                    }
+                    
+                    .muted {
+                        color: var(--muted);
+                    }
+                    
+                    .timeline {
+                        margin-top: 20px;
+                    }
+                    
+                    .tl {
+                        padding: 15px 0;
+                        border-left: 2px solid var(--line);
+                        padding-left: 20px;
+                        margin-left: 10px;
+                        position: relative;
+                    }
+                    
+                    .tl:before {
+                        content: '';
+                        position: absolute;
+                        left: -6px;
+                        top: 20px;
+                        width: 10px;
+                        height: 10px;
+                        background: var(--brand);
+                        border-radius: 50%;
+                    }
+                    
+                    ul {
+                        padding-left: 20px;
+                    }
+                    
+                    li {
+                        margin: 8px 0;
+                        line-height: 1.6;
+                    }
+                    
+                    @media (max-width: 768px) {
+                        .hero-grid {
+                            grid-template-columns: 1fr;
+                            text-align: center;
+                        }
+                        
+                        .grid2 {
+                            grid-template-columns: 1fr;
+                        }
+                        
+                        .cards {
+                            grid-template-columns: 1fr;
+                        }
+                        
+                        .cta {
+                            justify-content: center;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <nav style="background: var(--card); border-bottom: 1px solid var(--line); padding: 15px 0;">
+                    <div class="wrap" style="display: flex; gap: 20px; align-items: center;">
+                        <a href="/home" style="color: var(--ink); text-decoration: none; font-weight: bold;">MAXX Energy EDAP</a>
+                        <div style="flex: 1;"></div>
+                        <a href="/home" class="%s" style="color: var(--muted); text-decoration: none;">Home</a>
+                        <a href="/about" class="%s" style="color: var(--muted); text-decoration: none;">About</a>
+                        <a href="/data" class="%s" style="color: var(--muted); text-decoration: none;">Data</a>
+                        <a href="/data-input" class="%s" style="color: var(--muted); text-decoration: none;">Data Input</a>
+                        <a href="/contact" class="%s" style="color: var(--muted); text-decoration: none;">Contact</a>
+                        <a href="/register" style="color: var(--brand); text-decoration: none;">Register</a>
+                    </div>
+                </nav>
+                %s
+            </body>
+            </html>
+            """.formatted(title,
+                "home".equals(activeSection) ? "active" : "",
+                "about".equals(activeSection) ? "active" : "",
+                "data".equals(activeSection) ? "active" : "",
+                "data-input".equals(activeSection) ? "active" : "",
+                "contact".equals(activeSection) ? "active" : "",
+                content);
+    }
 
 }
