@@ -325,6 +325,9 @@ public class AboutController {
             """ + getDataPageScript();
     }
 
+    private String getDataPageScript() {
+    }
+
     private String getUserContent() {
         return null;
     }
