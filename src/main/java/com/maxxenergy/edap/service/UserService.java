@@ -1,4 +1,4 @@
-package com.maxxenergy.edap.services;
+package com.maxxenergy.edap.service;
 
 import com.maxxenergy.edap.model.User;
 import com.maxxenergy.edap.repository.UserRepository;
@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
