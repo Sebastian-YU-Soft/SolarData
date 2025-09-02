@@ -29,6 +29,9 @@ public class AboutController {
         return getPageTemplate("Home · MAXX Energy EDAP", "home", getHomeContent());
     }
 
+    private String getPageTemplate(String s, String home, String homeContent) {
+    }
+
     @GetMapping(value = "/about", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String aboutPage() {
@@ -323,41 +326,5 @@ public class AboutController {
     }
 
     private String getUserContent() {
-        return """
-            <section class="hero-small">
-              <div class="wrap">
-                <h1>User Profile</h1>
-                <p class="lead">Manage your account settings and access permissions.</p>
-              </div>
-            </section>
-
-            <main class="wrap">
-              <section class="user-profile">
-                <div class="grid2">
-                  <div class="panel">
-                    <h2>Profile Information</h2>
-                    <div class="profile-section">
-                      <div class="avatar">
-                        <div class="avatar-circle">JD</div>
-                      </div>
-                      <div class="profile-info">
-                        <h3>John Doe</h3>
-                        <p class="muted">john.doe@maxxenergy.com</p>
-                        <p class="role-badge">Manager</p>
-                      </div>
-                    </div>
-
-                    <div class="info-grid">
-                      <div class="info-item">
-                        <label>Department:</label>
-                        <span>Operations</span>
-                      </div>
-                      <div class="info-item">
-                        <label>Location:</label>
-                        <span>New York, NY</span>
-                      </div>
-                      <div class="info-item">
-                        <label>Joined:</label>
-                        <span>March 2024</span>
-                      </div>
-                      <div class="info-item">
+        return null;
+    }
