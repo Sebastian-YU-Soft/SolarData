@@ -1,483 +1,247 @@
-package com.maxxenergy.edap.controller;
+package com.maxxenergy.edap.model;
 
-import com.maxxenergy.edap.model.SolarDataEntry;
-import com.maxxenergy.edap.service.SolarDataEntryService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import javax.validation.constraints.*;
+import java.time.LocalDateTime;
 
-@Controller
-@RequestMapping("/data-input")
-public class DataInputController {
+/**
+ * Model class for solar data entries submitted by users.
+ * Contains comprehensive solar plant performance data.
+ */
+@Document(collection = "solar_data_entries")
+public class SolarDataEntry {
 
-    @Autowired
-    private SolarDataEntryService dataEntryService;
+    @Id
+    private String id;
 
-    @GetMapping
-    public ResponseEntity<String> showDataInputPage() {
-        return ResponseEntity.ok()
-                .header("Content-Type", "text/html")
-                .body(generateDataInputPage());
+    @Indexed
+    @NotBlank(message = "User ID is required")
+    private String userId;
+
+    @JsonProperty("plantName")
+    @NotBlank(message = "Plant name is required")
+    @Size(min = 2, max = 100, message = "Plant name must be between 2 and 100 characters")
+    private String plantName;
+
+    @JsonProperty("generation")
+    @DecimalMin(value = "0.0", message = "Generation cannot be negative")
+    @NotNull(message = "Generation is required")
+    private Double generation; // Current power generation in MW
+
+    @JsonProperty("capacity")
+    @DecimalMin(value = "0.1", message = "Capacity must be positive")
+    @NotNull(message = "Capacity is required")
+    private Double capacity; // Plant capacity in MW
+
+    @JsonProperty("efficiency")
+    @DecimalMin(value = "0.0", message = "Efficiency cannot be negative")
+    @DecimalMax(value = "100.0", message = "Efficiency cannot exceed 100%")
+    @NotNull(message = "Efficiency is required")
+    private Double efficiency; // Efficiency percentage
+
+    @JsonProperty("temperature")
+    @DecimalMin(value = "-50.0", message = "Temperature seems unrealistic")
+    @DecimalMax(value = "70.0", message = "Temperature seems unrealistic")
+    private Double temperature = 25.0; // Temperature in Celsius, default 25°C
+
+    @JsonProperty("irradiance")
+    @DecimalMin(value = "0.0", message = "Irradiance cannot be negative")
+    @DecimalMax(value = "1500.0", message = "Irradiance seems unrealistic")
+    private Double irradiance = 1000.0; // Solar irradiance in W/m², default 1000
+
+    @JsonProperty("revenue")
+    @DecimalMin(value = "0.0", message = "Revenue cannot be negative")
+    private Double revenue = 0.0; // Revenue generated in dollars
+
+    @CreatedDate
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime timestamp;
+
+    @Indexed
+    private boolean isPublic = false; // Whether this data is publicly viewable
+
+    private String notes; // Optional notes about the data entry
+
+    // Calculated fields
+    private Double capacityUtilization; // Generation / Capacity * 100
+
+    // Default constructor for MongoDB and JSON deserialization
+    public SolarDataEntry() {
+        this.timestamp = LocalDateTime.now();
+        this.temperature = 25.0;
+        this.irradiance = 1000.0;
+        this.revenue = 0.0;
+        this.isPublic = false;
     }
 
-    @PostMapping("/api/submit")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> submitData(@RequestBody SolarDataEntry entry) {
-        Map<String, Object> response = new HashMap<>();
+    /**
+     * Constructor with required fields
+     */
+    public SolarDataEntry(String userId, String plantName, Double generation,
+                          Double capacity, Double efficiency) {
+        this();
+        this.userId = userId;
+        this.plantName = plantName;
+        this.generation = generation;
+        this.capacity = capacity;
+        this.efficiency = efficiency;
+        calculateDerivedFields();
+    }
 
-        try {
-            // In a real application, you'd get the user ID from the session/JWT token
-            // For now, using a placeholder - you'll need to implement proper authentication
-            entry.setUserId("demo-user-123");
-
-            SolarDataEntry saved = dataEntryService.saveDataEntry(entry);
-            response.put("success", true);
-            response.put("message", "Data saved successfully");
-            response.put("id", saved.getId());
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+    /**
+     * Calculate derived fields like capacity utilization
+     */
+    public void calculateDerivedFields() {
+        if (capacity != null && capacity > 0 && generation != null) {
+            this.capacityUtilization = (generation / capacity) * 100.0;
         }
     }
 
-    @GetMapping("/api/user-data")
-    @ResponseBody
-    public ResponseEntity<List<SolarDataEntry>> getUserData() {
-        try {
-            // Same note about user ID - implement proper authentication
-            String userId = "demo-user-123";
-            List<SolarDataEntry> entries = dataEntryService.getRecentUserEntries(userId, 10);
-            return ResponseEntity.ok(entries);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+    // Getters and setters
+    public String getId() {
+        return id;
     }
 
-    private String generateDataInputPage() {
-        return """
-        <!doctype html>
-        <html lang="en">
-        <head>
-            <meta charset="utf-8"/>
-            <meta name="viewport" content="width=device-width, initial-scale=1"/>
-            <title>Data Input · MAXX Energy EDAP</title>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-            <style>
-                :root {
-                    --bg: #0b0c10;
-                    --card: #111217;
-                    --ink: #e8eaf0;
-                    --muted: #99a1b3;
-                    --line: #1f2330;
-                    --brand: #e22323;
-                    --brand2: #8b1111;
-                }
-                
-                body {
-                    margin: 0;
-                    background: linear-gradient(180deg, #0b0c10 0%, #0e1117 100%);
-                    color: var(--ink);
-                    font: 15px/1.55 system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                }
-                
-                .wrap {
-                    max-width: 1200px;
-                    margin: 0 auto;
-                    padding: 20px;
-                }
-                
-                .hero-small {
-                    background: var(--card);
-                    border-bottom: 1px solid var(--line);
-                    padding: 40px 0;
-                    margin-bottom: 30px;
-                }
-                
-                .hero-small h1 {
-                    margin: 0 0 10px;
-                    font-size: 2.2em;
-                }
-                
-                .lead {
-                    color: var(--muted);
-                    font-size: 1.1em;
-                    margin: 0;
-                }
-                
-                .grid2 {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 30px;
-                    margin-top: 30px;
-                }
-                
-                .panel {
-                    background: var(--card);
-                    border: 1px solid var(--line);
-                    border-radius: 18px;
-                    padding: 25px;
-                }
-                
-                .form-group {
-                    margin-bottom: 20px;
-                }
-                
-                .form-group label {
-                    display: block;
-                    margin-bottom: 8px;
-                    font-weight: 600;
-                    color: var(--ink);
-                }
-                
-                .form-input {
-                    width: 100%;
-                    padding: 12px 15px;
-                    border: 1px solid var(--line);
-                    border-radius: 12px;
-                    background: #0d1017;
-                    color: var(--ink);
-                    font-size: 15px;
-                    box-sizing: border-box;
-                }
-                
-                .form-input:focus {
-                    outline: none;
-                    border-color: var(--brand);
-                }
-                
-                .btn {
-                    padding: 12px 20px;
-                    border-radius: 12px;
-                    border: 1px solid var(--line);
-                    background: var(--card);
-                    color: var(--ink);
-                    cursor: pointer;
-                    font-size: 15px;
-                    transition: all 0.2s;
-                }
-                
-                .btn.primary {
-                    background: linear-gradient(180deg, var(--brand), var(--brand2));
-                    border: 0;
-                    color: white;
-                }
-                
-                .btn:hover {
-                    transform: translateY(-1px);
-                }
-                
-                .btn:disabled {
-                    opacity: 0.5;
-                    cursor: not-allowed;
-                    transform: none;
-                }
-                
-                .chart-container {
-                    position: relative;
-                    height: 400px;
-                    margin-top: 20px;
-                }
-                
-                .loading {
-                    text-align: center;
-                    color: var(--muted);
-                    padding: 20px;
-                }
-                
-                .alert {
-                    padding: 15px;
-                    border-radius: 12px;
-                    margin-bottom: 20px;
-                }
-                
-                .alert.success {
-                    background: #1a3d2e;
-                    border: 1px solid #2d6a4f;
-                    color: #a7f3d0;
-                }
-                
-                .alert.error {
-                    background: #2a0f12;
-                    border: 1px solid #522;
-                    color: #f8caca;
-                }
-                
-                .nav-link {
-                    display: inline-block;
-                    margin: 10px 10px 10px 0;
-                    padding: 8px 12px;
-                    color: var(--muted);
-                    text-decoration: none;
-                    border: 1px solid var(--line);
-                    border-radius: 8px;
-                    transition: all 0.2s;
-                }
-                
-                .nav-link:hover {
-                    color: var(--ink);
-                    border-color: var(--brand);
-                }
-                
-                @media (max-width: 768px) {
-                    .grid2 {
-                        grid-template-columns: 1fr;
-                        gap: 20px;
-                    }
-                }
-            </style>
-        </head>
-        <body>
-            <section class="hero-small">
-                <div class="wrap">
-                    <div style="margin-bottom: 15px;">
-                        <a href="/home" class="nav-link">Home</a>
-                        <a href="/data" class="nav-link">Public Data</a>
-                        <a href="/about" class="nav-link">About</a>
-                        <a href="/contact" class="nav-link">Contact</a>
-                    </div>
-                    <h1>Solar Data Input</h1>
-                    <p class="lead">Input your solar plant data and visualize performance metrics.</p>
-                </div>
-            </section>
-            
-            <main class="wrap">
-                <div class="grid2">
-                    <div class="panel">
-                        <h2>Input Solar Data</h2>
-                        <div id="alertContainer"></div>
-                        
-                        <form id="dataForm">
-                            <div class="form-group">
-                                <label for="plantName">Plant Name *</label>
-                                <input type="text" id="plantName" class="form-input" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="generation">Current Generation (MW) *</label>
-                                <input type="number" id="generation" class="form-input" step="0.1" min="0" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="capacity">Plant Capacity (MW) *</label>
-                                <input type="number" id="capacity" class="form-input" step="0.1" min="0" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="efficiency">Efficiency (%) *</label>
-                                <input type="number" id="efficiency" class="form-input" step="0.1" min="0" max="100" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="temperature">Temperature (°C)</label>
-                                <input type="number" id="temperature" class="form-input" step="0.1">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="irradiance">Solar Irradiance (W/m²)</label>
-                                <input type="number" id="irradiance" class="form-input" step="1" min="0">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="revenue">Revenue Generated ($)</label>
-                                <input type="number" id="revenue" class="form-input" step="0.01" min="0">
-                            </div>
-                            
-                            <button type="submit" class="btn primary">Submit Data</button>
-                        </form>
-                    </div>
-                    
-                    <div class="panel">
-                        <h2>Performance Visualization</h2>
-                        <div class="chart-container">
-                            <canvas id="performanceChart"></canvas>
-                        </div>
-                        <button type="button" class="btn" onclick="refreshChart()" style="margin-top: 15px;">
-                            Refresh Chart
-                        </button>
-                    </div>
-                </div>
-            </main>
-            
-            <script>
-                let chart = null;
-                
-                // Initialize chart
-                function initChart() {
-                    const ctx = document.getElementById('performanceChart').getContext('2d');
-                    chart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: [],
-                            datasets: [{
-                                label: 'Generation (MW)',
-                                data: [],
-                                borderColor: '#e22323',
-                                backgroundColor: 'rgba(226, 35, 35, 0.1)',
-                                tension: 0.4
-                            }, {
-                                label: 'Efficiency (%)',
-                                data: [],
-                                borderColor: '#2563eb',
-                                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                                tension: 0.4,
-                                yAxisID: 'y1'
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    labels: {
-                                        color: '#e8eaf0'
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    ticks: {
-                                        color: '#99a1b3'
-                                    },
-                                    grid: {
-                                        color: '#1f2330'
-                                    }
-                                },
-                                y: {
-                                    type: 'linear',
-                                    display: true,
-                                    position: 'left',
-                                    ticks: {
-                                        color: '#99a1b3'
-                                    },
-                                    grid: {
-                                        color: '#1f2330'
-                                    }
-                                },
-                                y1: {
-                                    type: 'linear',
-                                    display: true,
-                                    position: 'right',
-                                    ticks: {
-                                        color: '#99a1b3'
-                                    },
-                                    grid: {
-                                        drawOnChartArea: false
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-                
-                // Load user data and update chart
-                async function loadUserData() {
-                    try {
-                        const response = await fetch('/data-input/api/user-data');
-                        if (!response.ok) throw new Error('Failed to load data');
-                        
-                        const data = await response.json();
-                        updateChart(data);
-                    } catch (error) {
-                        console.error('Error loading user data:', error);
-                        showAlert('Failed to load chart data', 'error');
-                    }
-                }
-                
-                // Update chart with data
-                function updateChart(data) {
-                    if (!chart || !data || data.length === 0) return;
-                    
-                    // Sort by timestamp and take last 10 entries
-                    const sortedData = data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)).slice(-10);
-                    
-                    const labels = sortedData.map(entry => {
-                        const date = new Date(entry.timestamp);
-                        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    });
-                    
-                    const generationData = sortedData.map(entry => entry.generation);
-                    const efficiencyData = sortedData.map(entry => entry.efficiency);
-                    
-                    chart.data.labels = labels;
-                    chart.data.datasets[0].data = generationData;
-                    chart.data.datasets[1].data = efficiencyData;
-                    chart.update();
-                }
-                
-                // Show alert message
-                function showAlert(message, type) {
-                    const container = document.getElementById('alertContainer');
-                    container.innerHTML = `<div class="alert ${type}">${message}</div>`;
-                    setTimeout(() => {
-                        container.innerHTML = '';
-                    }, 5000);
-                }
-                
-                // Handle form submission
-                document.getElementById('dataForm').addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    
-                    const submitBtn = e.target.querySelector('button[type="submit"]');
-                    submitBtn.disabled = true;
-                    submitBtn.textContent = 'Submitting...';
-                    
-                    const formData = {
-                        plantName: document.getElementById('plantName').value,
-                        generation: parseFloat(document.getElementById('generation').value),
-                        capacity: parseFloat(document.getElementById('capacity').value),
-                        efficiency: parseFloat(document.getElementById('efficiency').value),
-                        temperature: parseFloat(document.getElementById('temperature').value) || 0,
-                        irradiance: parseFloat(document.getElementById('irradiance').value) || 0,
-                        revenue: parseFloat(document.getElementById('revenue').value) || 0
-                    };
-                    
-                    try {
-                        const response = await fetch('/data-input/api/submit', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(formData)
-                        });
-                        
-                        const result = await response.json();
-                        
-                        if (result.success) {
-                            showAlert('Data submitted successfully!', 'success');
-                            document.getElementById('dataForm').reset();
-                            setTimeout(() => loadUserData(), 1000); // Refresh chart after 1 second
-                        } else {
-                            showAlert(result.error || 'Failed to submit data', 'error');
-                        }
-                    } catch (error) {
-                        console.error('Error submitting data:', error);
-                        showAlert('Network error: Failed to submit data', 'error');
-                    } finally {
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = 'Submit Data';
-                    }
-                });
-                
-                // Refresh chart function
-                function refreshChart() {
-                    loadUserData();
-                }
-                
-                // Initialize on page load
-                document.addEventListener('DOMContentLoaded', function() {
-                    initChart();
-                    loadUserData();
-                });
-            </script>
-        </body>
-        </html>
-        """;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getPlantName() {
+        return plantName;
+    }
+
+    public void setPlantName(String plantName) {
+        this.plantName = plantName;
+    }
+
+    public Double getGeneration() {
+        return generation;
+    }
+
+    public void setGeneration(Double generation) {
+        this.generation = generation;
+        calculateDerivedFields();
+    }
+
+    public Double getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(Double capacity) {
+        this.capacity = capacity;
+        calculateDerivedFields();
+    }
+
+    public Double getEfficiency() {
+        return efficiency;
+    }
+
+    public void setEfficiency(Double efficiency) {
+        this.efficiency = efficiency;
+    }
+
+    public Double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(Double temperature) {
+        this.temperature = temperature != null ? temperature : 25.0;
+    }
+
+    public Double getIrradiance() {
+        return irradiance;
+    }
+
+    public void setIrradiance(Double irradiance) {
+        this.irradiance = irradiance != null ? irradiance : 1000.0;
+    }
+
+    public Double getRevenue() {
+        return revenue;
+    }
+
+    public void setRevenue(Double revenue) {
+        this.revenue = revenue != null ? revenue : 0.0;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp != null ? timestamp : LocalDateTime.now();
+    }
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public Double getCapacityUtilization() {
+        return capacityUtilization;
+    }
+
+    /**
+     * Get a formatted summary of this data entry
+     */
+    public String getSummary() {
+        return String.format("%s: %.1f MW (%.1f%% efficiency) at %s",
+                plantName, generation, efficiency,
+                timestamp.toString().substring(0, 16));
+    }
+
+    /**
+     * Validate the data entry for business rules
+     */
+    public boolean isValid() {
+        return userId != null && !userId.trim().isEmpty() &&
+                plantName != null && !plantName.trim().isEmpty() &&
+                generation != null && generation >= 0 &&
+                capacity != null && capacity > 0 &&
+                efficiency != null && efficiency >= 0 && efficiency <= 100 &&
+                timestamp != null;
+    }
+
+    @Override
+    public String toString() {
+        return "SolarDataEntry{" +
+                "id='" + id + '\'' +
+                ", userId='" + userId + '\'' +
+                ", plantName='" + plantName + '\'' +
+                ", generation=" + generation + " MW" +
+                ", capacity=" + capacity + " MW" +
+                ", efficiency=" + efficiency + "%" +
+                ", temperature=" + temperature + "°C" +
+                ", irradiance=" + irradiance + " W/m²" +
+                ", revenue=$" + revenue +
+                ", timestamp=" + timestamp +
+                ", isPublic=" + isPublic +
+                ", capacityUtilization=" + (capacityUtilization != null ?
+                String.format("%.1f%%", capacityUtilization) : "N/A") +
+                '}';
     }
 }
