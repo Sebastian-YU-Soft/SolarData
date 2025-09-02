@@ -67,11 +67,17 @@ public class AboutController {
         return getPageTemplate("Contact Us · MAXX Energy EDAP", "contact", getContactContent());
     }
 
+    private String getContactContent() {
+    return null; }
+
     @GetMapping(value = "/faq", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String faqPage() {
         logger.debug("Serving FAQ page");
         return getPageTemplate("FAQ · MAXX Energy EDAP", "faq", getFaqContent());
+    }
+
+    private String getFaqContent() {
     }
 
     @GetMapping(value = "/data-input-info", produces = MediaType.TEXT_HTML_VALUE)
@@ -80,6 +86,9 @@ public class AboutController {
         logger.debug("Serving data input info page");
         return getPageTemplate("Data Input · MAXX Energy EDAP", "data-input", getDataInputInfoContent());
     }
+
+    private String getDataInputInfoContent() {
+    return null; }
 
     @GetMapping(value = "/health", produces = MediaType.TEXT_PLAIN_VALUE)
     @ResponseBody
@@ -139,6 +148,9 @@ public class AboutController {
             </main>
 
             """ + getHomePageScript();
+    }
+
+    private String getHomePageScript() {
     }
 
     private String getAboutContent() {
