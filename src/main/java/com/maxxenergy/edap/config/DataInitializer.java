@@ -1,5 +1,6 @@
 package com.maxxenergy.edap.config;
 
+import com.maxxenergy.edap.service.SolarDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;

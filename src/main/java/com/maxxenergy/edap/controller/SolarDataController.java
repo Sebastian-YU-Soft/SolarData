@@ -1,6 +1,7 @@
 package com.maxxenergy.edap.controller;
 
 import com.maxxenergy.edap.model.SolarData;
+import com.maxxenergy.edap.service.SolarDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
