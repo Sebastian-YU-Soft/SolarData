@@ -1,26 +1,78 @@
 package com.maxxenergy.edap.controller;
 
 import com.maxxenergy.edap.service.PageTemplateService;
+import com.maxxenergy.edap.service.SessionService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.http.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Cookie;
 
 @Controller
 public class AboutController {
 
     private static final Logger logger = LoggerFactory.getLogger(AboutController.class);
+    private static final String SESSION_COOKIE = "edap_session";
+
+    @Autowired
+    private SessionService sessionService;
 
     @GetMapping(value = "/about", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
-    public String aboutPage() {
+    public String aboutPage(HttpServletRequest request) {
         logger.debug("Serving about page");
-        return PageTemplateService.getPageTemplate("About · MAXX Energy EDAP", "about", getAboutContent());
+
+        String authenticatedEmail = getAuthenticatedEmail(request);
+        String authStatus = generateAuthStatus(authenticatedEmail);
+
+        return PageTemplateService.getPageTemplate("About · MAXX Energy EDAP", "about", getAboutContent(authStatus));
     }
 
-    private String getAboutContent() {
+    private String getAuthenticatedEmail(HttpServletRequest request) {
+        String sessionToken = getSessionToken(request);
+        return sessionToken != null ? sessionService.getEmailFromSession(sessionToken) : null;
+    }
+
+    private String getSessionToken(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (SESSION_COOKIE.equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    private String generateAuthStatus(String email) {
+        if (email == null) {
+            return """
+                <a class="btn" href="/auth/login">Log in</a> 
+                <a class="btn primary" href="/register">Register</a>
+                """;
+        } else {
+            return """
+                <span class="muted">Signed in as """ + escapeHtml(email) + """</span> 
+                <a class="btn" href="/auth/members">Members</a> 
+                <a class="btn" href="/auth/logout">Log out</a>
+                """;
+        }
+    }
+
+    private String escapeHtml(String input) {
+        if (input == null) return "";
+        return input.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+
+    private String getAboutContent(String authStatus) {
         return """
                 <section class="hero">
                   <div class="wrap hero-grid">
@@ -31,8 +83,7 @@ public class AboutController {
                         generation and revenue data. Public insights for everyone, secure detail for authorized roles.
                       </p>
                       <div class="cta">
-                        <a class="btn primary" href="/register">Create Account</a>
-                        <a class="btn" href="/contact">Get in touch</a>
+                        """ + authStatus + """
                         <a class="btn" href="#mission">Our mission</a>
                       </div>
                     </div>
@@ -94,6 +145,19 @@ public class AboutController {
                         <h3>Data & Security</h3>
                         <p class="muted">Embeds visualizations with filters/drilldowns and protects private data via authz/authn.</p>
                       </div>
+                    </div>
+                  </section>
+
+                  <section id="contact">
+                    <div class="panel">
+                      <h2>Contact Us</h2>
+                      <p class="muted">We usually respond within one business day.</p>
+                      <dl style="margin-top:10px">
+                        <dt>Email</dt><dd><a href="mailto:edap@maxxenergy.com">edap@maxxenergy.com</a></dd>
+                        <dt>Phone</dt><dd><a href="tel:+11234567890">+1 (123) 456-7890</a></dd>
+                        <dt>Address</dt><dd>123 Solar Way, New York, NY 10001</dd>
+                        <dt>Social</dt><dd><a href="#">LinkedIn</a> · <a href="#">YouTube</a></dd>
+                      </dl>
                     </div>
                   </section>
                 </main>
