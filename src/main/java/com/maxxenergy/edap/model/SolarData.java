@@ -3,6 +3,7 @@ package com.maxxenergy.edap.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 /**
  * Model class representing public solar data that can be displayed without authentication.
@@ -94,14 +95,11 @@ public class SolarData {
         SolarData that = (SolarData) obj;
         return Double.compare(that.generation, generation) == 0 &&
                 Double.compare(that.revenue, revenue) == 0 &&
-                plantName.equals(that.plantName);
+                Objects.equals(plantName, that.plantName);
     }
 
     @Override
     public int hashCode() {
-        int result = plantName.hashCode();
-        result = 31 * result + Double.hashCode(generation);
-        result = 31 * result + Double.hashCode(revenue);
-        return result;
+        return Objects.hash(plantName, generation, revenue);
     }
 }

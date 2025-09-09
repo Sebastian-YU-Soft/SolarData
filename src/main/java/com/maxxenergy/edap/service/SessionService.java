@@ -16,6 +16,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class SessionService {
 
+    private static final Logger logger = LoggerFactory.getLogger(SessionService.class);
+
+    // In-memory storage for demo purposes
+    // In production, use Redis or database with proper expiration
+    private final Map<String, SessionInfo> sessions = new ConcurrentHashMap<>();
+    private final Map<String, ResetTokenInfo> resetTokens = new ConcurrentHashMap<>();
+
     private final SecureRandom secureRandom = new SecureRandom();
 
     // Session timeout in seconds (8 hours)
@@ -225,9 +232,4 @@ public class SessionService {
                 "resetTokenTimeout", RESET_TOKEN_TIMEOUT
         );
     }
-} static final Logger logger = LoggerFactory.getLogger(SessionService.class);
-
-// In-memory storage for demo purposes
-// In production, use Redis or database with proper expiration
-private final Map<String, SessionInfo> sessions = new ConcurrentHashMap<>();
-private final Map<String, ResetTokenInfo> resetTokens = new ConcurrentHashMap<>();
+}
