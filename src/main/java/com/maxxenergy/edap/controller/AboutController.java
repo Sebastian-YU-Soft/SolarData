@@ -57,7 +57,8 @@ public class AboutController {
         } else {
             return """
                 <span class="muted">Signed in as """ + escapeHtml(email) + """</span> 
-                <a class="btn" href="/auth/members">Members</a> 
+                <a class="btn" href="/auth/members">Members</a>
+                <a class="btn" href="/profile">Profile</a>
                 <a class="btn" href="/auth/logout">Log out</a>
                 """;
         }
