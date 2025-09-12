@@ -381,7 +381,7 @@ public class ProfileController {
                         <div>
                           <div class="profile-item">
                             <div class="profile-label">Full Name</div>
-                            <div class="profile-value">""" + safeName + """</div>
+                            <div class="profile-value">""" + safeName + """0 </div>
                           </div>
                           <div class="profile-item">
                             <div class="profile-label">Email Address</div>
