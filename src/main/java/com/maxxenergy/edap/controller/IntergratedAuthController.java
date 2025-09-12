@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
 
 /**
  * Integrated authentication controller combining login, logout, password reset,
@@ -47,7 +47,7 @@ public class IntegratedAuthController {
         if (email != null) {
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header("Location", "/auth/members")
-                    .body("");
+                    .build();
         }
 
         return ResponseEntity.ok()
@@ -97,10 +97,10 @@ public class IntegratedAuthController {
 
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header("Location", "/auth/members")
-                    .body("");
+                    .build();
 
         } catch (Exception e) {
-            logger.error("Login error: {}", e.getMessage());
+            logger.error("Login error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.TEXT_HTML)
                     .body(generateLoginForm(email, "", "An error occurred during login. Please try again."));
@@ -125,7 +125,7 @@ public class IntegratedAuthController {
 
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header("Location", "/home")
-                .body("");
+                .build();
     }
 
     // ===== MEMBERS AREA =====
@@ -141,7 +141,7 @@ public class IntegratedAuthController {
         if (email == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header("Location", "/auth/login")
-                    .body("");
+                    .build();
         }
 
         try {
@@ -153,7 +153,7 @@ public class IntegratedAuthController {
                     .body(generateMembersPage(name, email, user != null ? user.getRole() : "staff"));
 
         } catch (Exception e) {
-            logger.error("Error loading members area: {}", e.getMessage());
+            logger.error("Error loading members area: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.TEXT_HTML)
                     .body(generateErrorPage("Unable to load members area"));
@@ -208,7 +208,7 @@ public class IntegratedAuthController {
                             "Back to Login", "/auth/login"));
 
         } catch (Exception e) {
-            logger.error("Error processing forgot password: {}", e.getMessage());
+            logger.error("Error processing forgot password: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.TEXT_HTML)
                     .body(generateForgotPasswordForm(email, "An error occurred. Please try again."));
@@ -301,7 +301,7 @@ public class IntegratedAuthController {
             }
 
         } catch (Exception e) {
-            logger.error("Error resetting password: {}", e.getMessage());
+            logger.error("Error resetting password: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.TEXT_HTML)
                     .body(generateResetPasswordForm(token, "An error occurred. Please try again."));
