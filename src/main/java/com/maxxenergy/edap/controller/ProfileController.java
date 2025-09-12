@@ -108,8 +108,8 @@ public class ProfileController {
     @PostMapping("/update")
     public ResponseEntity<String> updateProfile(
             @RequestParam String name,
-            @RequestParam String department,
-            @RequestParam String location,
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) String location,
             @RequestParam(required = false) String currentPassword,
             @RequestParam(required = false) String newPassword,
             @RequestParam(required = false) String confirmPassword,
@@ -132,57 +132,28 @@ public class ProfileController {
                         .body(generateErrorPage("User not found"));
             }
 
-            // Validate input
-            if (name == null || name.trim().isEmpty()) {
+            // Validate profile input
+            String profileError = validateProfileInput(name, department, location);
+            if (profileError != null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .contentType(MediaType.TEXT_HTML)
-                        .body(generateEditProfilePage(user, "Name is required"));
-            }
-
-            if (name.trim().length() < 2) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .contentType(MediaType.TEXT_HTML)
-                        .body(generateEditProfilePage(user, "Name must be at least 2 characters long"));
+                        .body(generateEditProfilePage(user, profileError));
             }
 
             // Handle password change if provided
-            if (currentPassword != null && !currentPassword.isEmpty()) {
-                // Verify current password
-                User authUser = userService.authenticateUser(email, currentPassword);
-                if (authUser == null) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .contentType(MediaType.TEXT_HTML)
-                            .body(generateEditProfilePage(user, "Current password is incorrect"));
-                }
-
-                if (newPassword == null || newPassword.isEmpty()) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .contentType(MediaType.TEXT_HTML)
-                            .body(generateEditProfilePage(user, "New password is required"));
-                }
-
-                if (!newPassword.equals(confirmPassword)) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .contentType(MediaType.TEXT_HTML)
-                            .body(generateEditProfilePage(user, "New passwords do not match"));
-                }
-
-                // Validate password strength
-                String passwordError = validatePasswordStrength(newPassword);
+            if (isPasswordChangeRequired(currentPassword, newPassword, confirmPassword)) {
+                String passwordError = handlePasswordChange(user, currentPassword, newPassword, confirmPassword);
                 if (passwordError != null) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                             .contentType(MediaType.TEXT_HTML)
                             .body(generateEditProfilePage(user, passwordError));
                 }
-
-                // Update password
-                userService.resetPassword(email, newPassword);
             }
 
             // Update user profile
             user.setName(name.trim());
-            user.setDepartment(department != null ? department.trim() : null);
-            user.setLocation(location != null ? location.trim() : null);
+            user.setDepartment(department != null && !department.trim().isEmpty() ? department.trim() : null);
+            user.setLocation(location != null && !location.trim().isEmpty() ? location.trim() : null);
 
             userService.updateUser(user);
 
@@ -272,6 +243,78 @@ public class ProfileController {
         }
 
         return null;
+    }
+
+    private String validateProfileInput(String name, String department, String location) {
+        if (name == null || name.trim().isEmpty()) {
+            return "Name is required";
+        }
+
+        String trimmedName = name.trim();
+        if (trimmedName.length() < 2) {
+            return "Name must be at least 2 characters long";
+        }
+        if (trimmedName.length() > 100) {
+            return "Name cannot exceed 100 characters";
+        }
+
+        // Check for invalid characters in name
+        if (!trimmedName.matches("^[a-zA-Z\\s\\-\\.]+$")) {
+            return "Name can only contain letters, spaces, hyphens, and periods";
+        }
+
+        // Validate department if provided
+        if (department != null && !department.trim().isEmpty()) {
+            if (department.trim().length() > 100) {
+                return "Department cannot exceed 100 characters";
+            }
+        }
+
+        // Validate location if provided
+        if (location != null && !location.trim().isEmpty()) {
+            if (location.trim().length() > 100) {
+                return "Location cannot exceed 100 characters";
+            }
+        }
+
+        return null; // Valid input
+    }
+
+    private boolean isPasswordChangeRequired(String currentPassword, String newPassword, String confirmPassword) {
+        return (currentPassword != null && !currentPassword.trim().isEmpty()) ||
+                (newPassword != null && !newPassword.trim().isEmpty()) ||
+                (confirmPassword != null && !confirmPassword.trim().isEmpty());
+    }
+
+    private String handlePasswordChange(User user, String currentPassword, String newPassword, String confirmPassword) {
+        // Verify current password
+        User authUser = userService.authenticateUser(user.getEmail(), currentPassword);
+        if (authUser == null) {
+            return "Current password is incorrect";
+        }
+
+        if (newPassword == null || newPassword.isEmpty()) {
+            return "New password is required";
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            return "New passwords do not match";
+        }
+
+        // Validate password strength
+        String passwordError = validatePasswordStrength(newPassword);
+        if (passwordError != null) {
+            return passwordError;
+        }
+
+        try {
+            // Update password
+            userService.resetPassword(user.getEmail(), newPassword);
+            return null; // Success
+        } catch (Exception e) {
+            logger.error("Error updating password: {}", e.getMessage());
+            return "Failed to update password";
+        }
     }
 
     private String escapeHtml(String input) {
@@ -517,214 +560,7 @@ public class ProfileController {
                 </body></html>
                 """;
     }
-                    <div class="card">
-    <h1>My Profile</h1>
-            """ + (successMessage != null ? "<div class=\"success\">" + escapeHtml(successMessage) + "</div>" : "") + """
-            """ + (errorMessage != null ? "<div class=\"error\">" + escapeHtml(errorMessage) + "</div>" : "") + """
-                      <div class="profile-grid">
-                        <div>
-                          <div class="profile-item">
-                            <div class="profile-label">Full Name</div>
-                            <div class="profile-value">""" + escapeHtml(user.getName()) + """</div>
-                          </div>
-                          <div class="profile-item">
-                            <div class="profile-label">Email Address</div>
-                            <div class="profile-value">""" + escapeHtml(user.getEmail()) + """</div>
-                          </div>
-                          <div class="profile-item">
-                            <div class="profile-label">Role</div>
-                            <div class="profile-value">""" + escapeHtml(user.getRole()) + """</div>
-                          </div>
-                        </div>
-                        <div>
-                          <div class="profile-item">
-                            <div class="profile-label">Department</div>
-                            <div class="profile-value">""" + escapeHtml(user.getDepartment() != null ? user.getDepartment() : "Not specified") + """</div>
-                          </div>
-                          <div class="profile-item">
-                            <div class="profile-label">Location</div>
-                            <div class="profile-value">""" + escapeHtml(user.getLocation() != null ? user.getLocation() : "Not specified") + """</div>
-                          </div>
-                          <div class="profile-item">
-                            <div class="profile-label">Account Created</div>
-                            <div class="profile-value">""" + (user.getCreatedAt() != null ? user.getCreatedAt().toLocalDate().toString() : "Unknown") + """</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="actions">
-                        <a class="btn primary" href="/profile/edit">Edit Profile</a>
-                        <a class="btn" href="/auth/members">Back to Members Area</a>
-                      </div>
-                    </div>
-                  </div>
-                </body></html>
-            """;
-    }
 
-    private String generateEditProfilePage(User user, String errorMessage) {
-        return """
-                <!doctype html><html lang="en"><head>
-                  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Edit Profile · EDAP</title>
-                  <style>
-                    :root{--bg:#0b0c10; --card:#111217; --ink:#e8eaf0; --muted:#99a1b3; --line:#1f2330; --brand:#e22323; --brand2:#8b1111;}
-    body{margin:0;background:linear-gradient(180deg,#0b0c10,#0e1117);color:var(--ink);
-        font:15px/1.55 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-                    .wrap{max-width:600px;margin:48px auto;padding:0 18px}
-                    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:25px}
-    h1{margin:0 0 20px}
-                    .form-group{margin-bottom:20px}
-                    .form-group label{display:block;margin-bottom:8px;font-weight:600;color:var(--ink)}
-                    .form-input{width:100%;padding:12px 15px;border:1px solid var(--line);border-radius:12px;background:#0d1017;color:var(--ink);font-size:15px;box-sizing:border-box}
-                    .form-input:focus{outline:none;border-color:var(--brand)}
-                    .btn{padding:12px 20px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:15px;transition:all 0.2s;text-decoration:none;display:inline-block}
-                    .btn.primary{background:linear-gradient(180deg,var(--brand),var(--brand2));border:0;color:white}
-                    .btn:hover{transform:translateY(-1px)}
-                    .error{background:#2a0f12;border:1px solid #522;color:#f8caca;padding:15px;border-radius:12px;margin:20px 0}
-                    .section{border-top:1px solid var(--line);padding-top:20px;margin-top:30px}
-                    .help-text{font-size:13px;color:var(--muted);margin-top:5px}
-                    .actions{margin-top:25px;display:flex;gap:10px;flex-wrap:wrap}
-                    .nav-links{margin-bottom:20px}
-                    .nav-link{display:inline-block;margin-right:15px;color:var(--muted);text-decoration:none;padding:8px 12px;border:1px solid var(--line);border-radius:8px;transition:all 0.2s}
-                    .nav-link:hover{color:var(--ink);border-color:var(--brand)}
-                  </style></head><body>
-                  <div class="wrap">
-                    <div class="nav-links">
-                      <a href="/profile" class="nav-link">View Profile</a>
-                      <a href="/auth/members" class="nav-link">Members Area</a>
-                    </div>
-                    <div class="card">
-    <h1>Edit Profile</h1>
-            """ + (errorMessage != null ? "<div class=\"error\">" + escapeHtml(errorMessage) + "</div>" : "") + """
-                      <form method="POST" action="/profile/update">
-                        <div class="form-group">
-                          <label for="name">Full Name *</label>
-                          <input type="text" id="name" name="name" class="form-input" value=\"""" + escapeHtml(user.getName()) + """\" required>
-                          <div class="help-text">Your full name as you'd like it to appear</div>
-                        </div>
-
-                        <div class="form-group">
-                          <label for="department">Department</label>
-                          <input type="text" id="department" name="department" class="form-input" value=\"""" + escapeHtml(user.getDepartment() != null ? user.getDepartment() : "") + """\" placeholder="e.g., Engineering, Operations, Finance">
-                          <div class="help-text">Your department or division (optional)</div>
-                        </div>
-
-                        <div class="form-group">
-                          <label for="location">Location</label>
-                          <input type="text" id="location" name="location" class="form-input" value=\"""" + escapeHtml(user.getLocation() != null ? user.getLocation() : "") + """\" placeholder="e.g., New York, NY">
-                          <div class="help-text">Your primary work location (optional)</div>
-                        </div>
-
-                        <div class="section">
-    <h3>Change Password</h3>
-                          <p style="color:var(--muted);font-size:14px;">Leave password fields empty if you don't want to change your password.</p>
-
-                          <div class="form-group">
-                            <label for="currentPassword">Current Password</label>
-                            <input type="password" id="currentPassword" name="currentPassword" class="form-input">
-                          </div>
-
-                          <div class="form-group">
-                            <label for="newPassword">New Password</label>
-                            <input type="password" id="newPassword" name="newPassword" class="form-input">
-                            <div class="help-text">At least 8 characters with uppercase, lowercase, number, and special character</div>
-                          </div>
-
-                          <div class="form-group">
-                            <label for="confirmPassword">Confirm New Password</label>
-                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-input">
-                          </div>
-                        </div>
-
-                        <div class="actions">
-                          <button type="submit" class="btn primary">Save Changes</button>
-                          <a href="/profile" class="btn">Cancel</a>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </body></html>
-            """;
-    }
-
-    // ===== ADDITIONAL UTILITY AND ERROR HANDLING METHODS =====
-
-    /**
-     * Handle cases where user session exists but user record is deleted
-     */
-    private User validateUserSession(HttpServletRequest request) throws SecurityException {
-        String email = getAuthenticatedEmail(request);
-        if (email == null) {
-            throw new SecurityException("No valid session found");
-        }
-
-        User user = userService.findByEmail(email).orElse(null);
-        if (user == null) {
-            // Session exists but user was deleted - invalidate session
-            String sessionToken = getSessionToken(request);
-            if (sessionToken != null) {
-                sessionService.invalidateSession(sessionToken);
-            }
-            throw new SecurityException("User account no longer exists");
-        }
-
-        if (!user.isActive()) {
-            throw new SecurityException("User account is deactivated");
-        }
-
-        return user;
-    }
-
-    /**
-     * Validate profile update input
-     */
-    private String validateProfileInput(String name, String department, String location) {
-        if (name == null || name.trim().isEmpty()) {
-            return "Name is required";
-        }
-
-        String trimmedName = name.trim();
-        if (trimmedName.length() < 2) {
-            return "Name must be at least 2 characters long";
-        }
-        if (trimmedName.length() > 100) {
-            return "Name cannot exceed 100 characters";
-        }
-
-        // Check for invalid characters in name
-        if (!trimmedName.matches("^[a-zA-Z\\s\\-\\.]+$")) {
-            return "Name can only contain letters, spaces, hyphens, and periods";
-        }
-
-        // Validate department if provided
-        if (department != null && !department.trim().isEmpty()) {
-            if (department.trim().length() > 100) {
-                return "Department cannot exceed 100 characters";
-            }
-        }
-
-        // Validate location if provided
-        if (location != null && !location.trim().isEmpty()) {
-            if (location.trim().length() > 100) {
-                return "Location cannot exceed 100 characters";
-            }
-        }
-
-        return null; // Valid input
-    }
-
-    /**
-     * Check if password change is required
-     */
-    private boolean isPasswordChangeRequired(String currentPassword, String newPassword, String confirmPassword) {
-        return (currentPassword != null && !currentPassword.trim().isEmpty()) ||
-               (newPassword != null && !newPassword.trim().isEmpty()) ||
-               (confirmPassword != null && !confirmPassword.trim().isEmpty());
-    }
-
-    /**
-     * Generate safe error page with consistent styling
-     */
     private String generateErrorPage(String message) {
         String safeMessage = escapeHtml(message != null ? message : "An unknown error occurred");
 
@@ -732,14 +568,14 @@ public class ProfileController {
                 <!doctype html><html lang="en"><head>
                 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
                 <title>Error · EDAP</title>
-    <style>
-    body{margin:0;background:#0e1117;color:#e8eaf0;font:15px/1.55 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+                <style>
+                  body{margin:0;background:#0e1117;color:#e8eaf0;font:15px/1.55 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
                   .wrap{max-width:720px;margin:40px auto;padding:0 16px}
                   .card{background:#111217;border:1px solid #1f2330;border-radius:16px;padding:30px;text-align:center}
                   a.btn{display:inline-block;margin-top:20px;padding:12px 20px;border-radius:12px;border:1px solid #1f2330;color:#e8eaf0;text-decoration:none;background:#111217;transition:all 0.2s}
-    a.btn:hover{background:#1a1f2b;transform:translateY(-1px)}
+                  a.btn:hover{background:#1a1f2b;transform:translateY(-1px)}
                   .error-icon{font-size:48px;margin-bottom:20px}
-    h2{color:#f87171;margin:0 0 15px}
+                  h2{color:#f87171;margin:0 0 15px}
                   .muted{color:#99a1b3;margin:15px 0}
                 </style></head><body>
                 <div class="wrap">
@@ -755,22 +591,6 @@ public class ProfileController {
                   </div>
                 </div>
                 </body></html>
-            """;
-    }
-
-    /**
-     * Log user activity for audit purposes
-     */
-    private void logUserActivity(String email, String activity, boolean success) {
-        try {
-            if (success) {
-                logger.info("User activity - Email: {}, Activity: {}, Status: SUCCESS", email, activity);
-            } else {
-                logger.warn("User activity - Email: {}, Activity: {}, Status: FAILED", email, activity);
-            }
-        } catch (Exception e) {
-            // Don't let logging errors affect the main flow
-            logger.error("Error logging user activity: {}", e.getMessage());
-        }
+                """;
     }
 }
