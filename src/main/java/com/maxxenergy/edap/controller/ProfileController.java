@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Cookie;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -45,7 +45,7 @@ public class ProfileController {
         if (email == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header("Location", "/auth/login")
-                    .body("");
+                    .build();
         }
 
         try {
@@ -61,7 +61,7 @@ public class ProfileController {
                     .body(generateProfilePage(user, null, null));
 
         } catch (Exception e) {
-            logger.error("Error loading profile: {}", e.getMessage());
+            logger.error("Error loading profile: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.TEXT_HTML)
                     .body(generateErrorPage("Unable to load profile"));
@@ -79,7 +79,7 @@ public class ProfileController {
         if (email == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header("Location", "/auth/login")
-                    .body("");
+                    .build();
         }
 
         try {
@@ -95,7 +95,7 @@ public class ProfileController {
                     .body(generateEditProfilePage(user, null));
 
         } catch (Exception e) {
-            logger.error("Error loading edit profile: {}", e.getMessage());
+            logger.error("Error loading edit profile: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.TEXT_HTML)
                     .body(generateErrorPage("Unable to load edit form"));
@@ -121,7 +121,7 @@ public class ProfileController {
         if (email == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header("Location", "/auth/login")
-                    .body("");
+                    .build();
         }
 
         try {
@@ -164,7 +164,7 @@ public class ProfileController {
                     .body(generateProfilePage(user, "Profile updated successfully!", null));
 
         } catch (Exception e) {
-            logger.error("Error updating profile: {}", e.getMessage());
+            logger.error("Error updating profile: {}", e.getMessage(), e);
             User user = userService.findByEmail(email).orElse(null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.TEXT_HTML)
@@ -204,7 +204,7 @@ public class ProfileController {
             return ResponseEntity.ok(profile);
 
         } catch (Exception e) {
-            logger.error("Error getting profile API: {}", e.getMessage());
+            logger.error("Error getting profile API: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Internal server error"));
         }
@@ -312,7 +312,7 @@ public class ProfileController {
             userService.resetPassword(user.getEmail(), newPassword);
             return null; // Success
         } catch (Exception e) {
-            logger.error("Error updating password: {}", e.getMessage());
+            logger.error("Error updating password: {}", e.getMessage(), e);
             return "Failed to update password";
         }
     }
