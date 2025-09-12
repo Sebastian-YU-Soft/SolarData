@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Cookie;
 
 /**
  * Integrated authentication controller combining login, logout, password reset,
@@ -412,103 +412,6 @@ public class IntegratedAuthController {
                       <form method="POST" action="/auth/login">
                         <label for="email">Email</label>
                         <input id="email" type="email" name="email" value=\"""" + escapeHtml(email != null ? email : "") + """\" required />
-
-                        <label for="password">Password</label>
-                        <input id="password" type="password" name="password" required />
-
-                        <div class="actions">
-                          <button class="btn primary" type="submit">Log in</button>
-                          <a class="btn" href="/auth/forgot-password">Forgot password?</a>
-                          <a class="btn" href="/register">Create account</a>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </body></html>
-                """;
-    }
-
-    private String generateMembersPage(String name, String email, String role) {
-        return """
-                <!doctype html><html lang="en"><head>
-                  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-                  <title>Members Area · EDAP</title>
-                  <style>
-                    :root{--bg:#0b0c10; --card:#111217; --ink:#e8eaf0; --muted:#99a1b3; --line:#1f2330; --brand:#e22323;}
-                    body{margin:0;background:linear-gradient(180deg,#0b0c10,#0e1117);color:var(--ink);
-                         font:15px/1.55 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-                    .wrap{max-width:900px;margin:48px auto;padding:0 18px}
-                    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
-                    h1{margin:0 0 10px}
-                    .muted{color:var(--muted)}
-                    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
-                    @media (max-width:920px){.grid{grid-template-columns:1fr}}
-                    a.btn{display:inline-block;margin-top:12px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);color:var(--ink);text-decoration:none}
-                    a.btn:hover{background:#1a1f2b}
-                    ul{margin:8px 0 0 20px}
-                    .role-badge{background:var(--brand);color:white;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;text-transform:uppercase}
-                  </style></head><body>
-                  <div class="wrap">
-                    <div class="card">
-                      <h1>Welcome, """ + escapeHtml(name) + """!</h1>
-                      <p class="muted">You are signed in as <strong>""" + escapeHtml(email) + """</strong>
-                      <span class="role-badge">""" + escapeHtml(role) + """</span></p>
-                      <div class="grid">
-                        <div>
-                          <h3>Member Features</h3>
-                          <ul>
-                            <li><a href="/data-input">Input Solar Data</a></li>
-                            <li><a href="/data">View Dashboard</a></li>
-                            <li>Private energy KPIs</li>
-                            <li>Revenue drilldowns</li>
-                            <li>Download CSVs</li>
-                          </ul>
-                          <a class="btn" href="/home">Back to Home</a>
-                          <a class="btn" href="/profile">My Profile</a>
-                          <a class="btn" href="/auth/logout">Log out</a>
-                        </div>
-                        <div class="card">
-                          <h3>Account Information</h3>
-                          <ul>
-                            <li>Name: """ + escapeHtml(name) + """</li>
-                            <li>Email: """ + escapeHtml(email) + """</li>
-                            <li>Role: """ + escapeHtml(role) + """</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </body></html>
-                """;
-    }
-
-    private String generateForgotPasswordForm(String email, String error) {
-        return """
-                <!doctype html><html lang="en"><head>
-                  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-                  <title>Forgot Password · EDAP</title>
-                  <style>
-                    :root{--bg:#0b0c10; --card:#111217; --ink:#e8eaf0; --muted:#99a1b3; --line:#1f2330; --brand:#e22323; --brand2:#8b1111;}
-                    body{margin:0;background:linear-gradient(180deg,#0b0c10,#0e1117);color:var(--ink);
-                         font:15px/1.55 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-                    .wrap{max-width:520px;margin:48px auto;padding:0 18px}
-                    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
-                    label{display:block;margin:12px 0 6px;font-weight:600}
-                    input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0d1017;color:var(--ink);box-sizing:border-box}
-                    .btn{padding:12px 16px;border-radius:14px;border:1px solid var(--line);text-decoration:none;color:var(--ink);cursor:pointer;background:var(--card);font-size:15px}
-                    .btn.primary{background:linear-gradient(180deg,var(--brand),var(--brand2));border:0;color:white}
-                    .error{background:#2a0f12;border:1px solid #522;color:#f8caca;padding:10px;border-radius:12px;margin:10px 0}
-                    .actions{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
-                    .muted{color:var(--muted)}
-                  </style></head><body>
-                  <div class="wrap">
-                    <div class="card">
-                      <h1>Forgot your password?</h1>
-                      <p class="muted">Enter your email and we'll send you a reset link.</p>
-                """ + (error != null ? "<div class=\"error\">" + escapeHtml(error) + "</div>" : "") + """
-                      <form method="POST" action="/auth/forgot-password">
-                        <label for="email">Email</label>
-                        <input id="email" type="email" name="email" value=\"""" + escapeHtml(email != null ? email : "") + """\" required />
                         <div class="actions">
                           <button class="btn primary" type="submit">Send reset link</button>
                           <a class="btn" href="/auth/login">Back to login</a>
@@ -588,4 +491,100 @@ public class IntegratedAuthController {
     private String generateErrorPage(String message) {
         return generateInfoPage("Error", message, "Back to Home", "/home");
     }
-}
+}<input id="email" type="email" name="email" value=\"""" + escapeHtml(email != null ? email : "") + """\" required />
+
+                        <label for="password">Password</label>
+                        <input id="password" type="password" name="password" required />
+
+                        <div class="actions">
+                          <button class="btn primary" type="submit">Log in</button>
+                          <a class="btn" href="/auth/forgot-password">Forgot password?</a>
+                          <a class="btn" href="/register">Create account</a>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </body></html>
+        """;
+    }
+
+    private String generateMembersPage(String name, String email, String role) {
+        return """
+                <!doctype html><html lang="en"><head>
+                  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Members Area · EDAP</title>
+                  <style>
+                    :root{--bg:#0b0c10; --card:#111217; --ink:#e8eaf0; --muted:#99a1b3; --line:#1f2330; --brand:#e22323;}
+body{margin:0;background:linear-gradient(180deg,#0b0c10,#0e1117);color:var(--ink);
+    font:15px/1.55 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+                    .wrap{max-width:900px;margin:48px auto;padding:0 18px}
+                    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+h1{margin:0 0 10px}
+                    .muted{color:var(--muted)}
+                    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
+@media (max-width:920px){.grid{grid-template-columns:1fr}}
+        a.btn{display:inline-block;margin-top:12px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);color:var(--ink);text-decoration:none}
+a.btn:hover{background:#1a1f2b}
+ul{margin:8px 0 0 20px}
+                    .role-badge{background:var(--brand);color:white;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;text-transform:uppercase}
+                  </style></head><body>
+                  <div class="wrap">
+                    <div class="card">
+                      <h1>Welcome, """ + escapeHtml(name) + """!</h1>
+                      <p class="muted">You are signed in as <strong>""" + escapeHtml(email) + """</strong>
+                      <span class="role-badge">""" + escapeHtml(role) + """</span></p>
+                      <div class="grid">
+                        <div>
+<h3>Member Features</h3>
+                          <ul>
+                            <li><a href="/data-input">Input Solar Data</a></li>
+                            <li><a href="/data">View Dashboard</a></li>
+<li>Private energy KPIs</li>
+<li>Revenue drilldowns</li>
+<li>Download CSVs</li>
+                          </ul>
+                          <a class="btn" href="/home">Back to Home</a>
+                          <a class="btn" href="/profile">My Profile</a>
+                          <a class="btn" href="/auth/logout">Log out</a>
+                        </div>
+                        <div class="card">
+<h3>Account Information</h3>
+                          <ul>
+                            <li>Name: """ + escapeHtml(name) + """</li>
+                            <li>Email: """ + escapeHtml(email) + """</li>
+                            <li>Role: """ + escapeHtml(role) + """</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </body></html>
+        """;
+    }
+
+    private String generateForgotPasswordForm(String email, String error) {
+        return """
+                <!doctype html><html lang="en"><head>
+                  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Forgot Password · EDAP</title>
+                  <style>
+                    :root{--bg:#0b0c10; --card:#111217; --ink:#e8eaf0; --muted:#99a1b3; --line:#1f2330; --brand:#e22323; --brand2:#8b1111;}
+body{margin:0;background:linear-gradient(180deg,#0b0c10,#0e1117);color:var(--ink);
+    font:15px/1.55 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+                    .wrap{max-width:520px;margin:48px auto;padding:0 18px}
+                    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+label{display:block;margin:12px 0 6px;font-weight:600}
+input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0d1017;color:var(--ink);box-sizing:border-box}
+                    .btn{padding:12px 16px;border-radius:14px;border:1px solid var(--line);text-decoration:none;color:var(--ink);cursor:pointer;background:var(--card);font-size:15px}
+                    .btn.primary{background:linear-gradient(180deg,var(--brand),var(--brand2));border:0;color:white}
+                    .error{background:#2a0f12;border:1px solid #522;color:#f8caca;padding:10px;border-radius:12px;margin:10px 0}
+                    .actions{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+                    .muted{color:var(--muted)}
+                  </style></head><body>
+                  <div class="wrap">
+                    <div class="card">
+<h1>Forgot your password?</h1>
+                      <p class="muted">Enter your email and we'll send you a reset link.</p>
+        """ + (error != null ? "<div class=\"error\">" + escapeHtml(error) + "</div>" : "") + """
+                      <form method="POST" action="/auth/forgot-password">
+                        <label for="email">Email</label>
