@@ -1,25 +1,19 @@
 package com.maxxenergy.edap.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.index.Indexed;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Enhanced User entity for authentication, authorization, and profile management.
- * Stores user credentials, role-based permissions, and profile information.
+ * Uses in-memory storage instead of MongoDB.
  */
-@Document(collection = "users")
 public class User {
 
-    @Id
     private String id;
 
     @NotBlank(message = "Name is required")
@@ -28,7 +22,6 @@ public class User {
 
     @Email(message = "Valid email is required")
     @NotBlank(message = "Email is required")
-    @Indexed(unique = true)
     private String email;
 
     @JsonIgnore // Never expose password hash in JSON responses
@@ -57,11 +50,9 @@ public class User {
     private boolean requiresPasswordChange = false;
 
     // Audit fields
-    @CreatedDate
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 
-    @LastModifiedDate
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 
@@ -77,6 +68,7 @@ public class User {
 
     // Default constructor
     public User() {
+        this.id = UUID.randomUUID().toString();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.lastPasswordChange = LocalDateTime.now();
