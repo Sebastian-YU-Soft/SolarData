@@ -110,6 +110,7 @@ public class ProfileController {
             @RequestParam String name,
             @RequestParam(required = false) String department,
             @RequestParam(required = false) String location,
+            @RequestParam(required = false) String jobTitle,
             @RequestParam(required = false) String currentPassword,
             @RequestParam(required = false) String newPassword,
             @RequestParam(required = false) String confirmPassword,
@@ -133,7 +134,7 @@ public class ProfileController {
             }
 
             // Validate profile input
-            String profileError = validateProfileInput(name, department, location);
+            String profileError = validateProfileInput(name, department, location, jobTitle);
             if (profileError != null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .contentType(MediaType.TEXT_HTML)
@@ -154,6 +155,7 @@ public class ProfileController {
             user.setName(name.trim());
             user.setDepartment(department != null && !department.trim().isEmpty() ? department.trim() : null);
             user.setLocation(location != null && !location.trim().isEmpty() ? location.trim() : null);
+            user.setJobTitle(jobTitle != null && !jobTitle.trim().isEmpty() ? jobTitle.trim() : null);
 
             userService.updateUser(user);
 
@@ -197,6 +199,7 @@ public class ProfileController {
             profile.put("role", user.getRole());
             profile.put("department", user.getDepartment());
             profile.put("location", user.getLocation());
+            profile.put("jobTitle", user.getJobTitle());
             profile.put("createdAt", user.getCreatedAt());
             profile.put("lastLogin", user.getLastLogin());
             profile.put("isActive", user.isActive());
@@ -245,7 +248,7 @@ public class ProfileController {
         return null;
     }
 
-    private String validateProfileInput(String name, String department, String location) {
+    private String validateProfileInput(String name, String department, String location, String jobTitle) {
         if (name == null || name.trim().isEmpty()) {
             return "Name is required";
         }
@@ -263,18 +266,17 @@ public class ProfileController {
             return "Name can only contain letters, spaces, hyphens, and periods";
         }
 
-        // Validate department if provided
-        if (department != null && !department.trim().isEmpty()) {
-            if (department.trim().length() > 100) {
-                return "Department cannot exceed 100 characters";
-            }
+        // Validate optional fields
+        if (department != null && !department.trim().isEmpty() && department.trim().length() > 100) {
+            return "Department cannot exceed 100 characters";
         }
 
-        // Validate location if provided
-        if (location != null && !location.trim().isEmpty()) {
-            if (location.trim().length() > 100) {
-                return "Location cannot exceed 100 characters";
-            }
+        if (location != null && !location.trim().isEmpty() && location.trim().length() > 100) {
+            return "Location cannot exceed 100 characters";
+        }
+
+        if (jobTitle != null && !jobTitle.trim().isEmpty() && jobTitle.trim().length() > 100) {
+            return "Job title cannot exceed 100 characters";
         }
 
         return null; // Valid input
@@ -329,7 +331,6 @@ public class ProfileController {
     // ===== HTML GENERATION METHODS =====
 
     private String generateProfilePage(User user, String successMessage, String errorMessage) {
-        // Null safety checks
         if (user == null) {
             return generateErrorPage("User data not available");
         }
@@ -339,6 +340,7 @@ public class ProfileController {
         String safeRole = escapeHtml(user.getRole() != null ? user.getRole() : "staff");
         String safeDepartment = escapeHtml(user.getDepartment() != null ? user.getDepartment() : "Not specified");
         String safeLocation = escapeHtml(user.getLocation() != null ? user.getLocation() : "Not specified");
+        String safeJobTitle = escapeHtml(user.getJobTitle() != null ? user.getJobTitle() : "Not specified");
         String createdDate = user.getCreatedAt() != null ? user.getCreatedAt().toLocalDate().toString() : "Unknown";
 
         return """
@@ -391,6 +393,10 @@ public class ProfileController {
                             <div class="profile-label">Role</div>
                             <div class="profile-value">""" + safeRole + """</div>
                           </div>
+                          <div class="profile-item">
+                            <div class="profile-label">Job Title</div>
+                            <div class="profile-value">""" + safeJobTitle + """</div>
+                          </div>
                         </div>
                         <div>
                           <div class="profile-item">
@@ -418,7 +424,6 @@ public class ProfileController {
     }
 
     private String generateEditProfilePage(User user, String errorMessage) {
-        // Null safety checks
         if (user == null) {
             return generateErrorPage("User data not available");
         }
@@ -426,6 +431,7 @@ public class ProfileController {
         String safeName = escapeHtml(user.getName() != null ? user.getName() : "");
         String safeDepartment = escapeHtml(user.getDepartment() != null ? user.getDepartment() : "");
         String safeLocation = escapeHtml(user.getLocation() != null ? user.getLocation() : "");
+        String safeJobTitle = escapeHtml(user.getJobTitle() != null ? user.getJobTitle() : "");
 
         return """
                 <!doctype html><html lang="en"><head>
@@ -469,6 +475,14 @@ public class ProfileController {
                                  value=\"""" + safeName + """\" 
                                  required maxlength="100" minlength="2">
                           <div class="help-text">Your full name as you'd like it to appear (2-100 characters)</div>
+                        </div>
+
+                        <div class="form-group">
+                          <label for="jobTitle">Job Title</label>
+                          <input type="text" id="jobTitle" name="jobTitle" class="form-input" 
+                                 value=\"""" + safeJobTitle + """\" 
+                                 placeholder="e.g., Solar Engineer, Operations Manager" maxlength="100">
+                          <div class="help-text">Your job title or position (optional)</div>
                         </div>
 
                         <div class="form-group">
