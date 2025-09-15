@@ -17,8 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Cookie;
 
 /**
- * Integrated authentication controller combining login, logout, password reset,
- * and member area functionality with Spring Boot architecture.
+ * Fixed integrated authentication controller with corrected HTML forms.
  */
 @Controller
 @RequestMapping("/auth")
@@ -52,7 +51,7 @@ public class IntegratedAuthController {
 
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
-                .body(generateLoginForm(null, null, null));
+                .body(generateLoginForm(null, null));
     }
 
     /**
@@ -73,7 +72,7 @@ public class IntegratedAuthController {
             if (normalizedEmail.isEmpty() || password == null || password.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .contentType(MediaType.TEXT_HTML)
-                        .body(generateLoginForm(email, "", "Both fields are required."));
+                        .body(generateLoginForm(email, "Both fields are required."));
             }
 
             // Authenticate user
@@ -82,7 +81,7 @@ public class IntegratedAuthController {
                 logger.warn("Failed login attempt for: {}", normalizedEmail);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .contentType(MediaType.TEXT_HTML)
-                        .body(generateLoginForm(email, "", "Invalid email or password."));
+                        .body(generateLoginForm(email, "Invalid email or password."));
             }
 
             // Create session
@@ -103,7 +102,7 @@ public class IntegratedAuthController {
             logger.error("Login error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.TEXT_HTML)
-                    .body(generateLoginForm(email, "", "An error occurred during login. Please try again."));
+                    .body(generateLoginForm(email, "An error occurred during login. Please try again."));
         }
     }
 
@@ -372,9 +371,9 @@ public class IntegratedAuthController {
                 .replace("'", "&#39;");
     }
 
-    // ===== HTML GENERATION METHODS =====
+    // ===== HTML GENERATION METHODS (CORRECTED) =====
 
-    private String generateLoginForm(String email, String password, String error) {
+    private String generateLoginForm(String email, String error) {
         return """
                 <!doctype html><html lang="en"><head>
                   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -388,54 +387,6 @@ public class IntegratedAuthController {
                     label{display:block;margin:12px 0 6px;font-weight:600}
                     input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0d1017;color:var(--ink);box-sizing:border-box}
                     input:focus{outline:none;border-color:var(--brand)}
-                    .btn{padding:12px 16px;border-radius:14px;border:1px solid var(--line);text-decoration:none;color:var(--ink);cursor:pointer;background:var(--card);font-size:15px}
-                    .btn.primary{background:linear-gradient(180deg,var(--brand),var(--brand2));border:0;color:white}
-                    .btn:hover{transform:translateY(-1px)}
-                    .error{background:#2a0f12;border:1px solid #522;color:#f8caca;padding:10px;border-radius:12px;margin:10px 0}
-                    .actions{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
-                    .muted{color:var(--muted)}
-                    .nav-links{margin-bottom:20px}
-                    .nav-link{display:inline-block;margin-right:15px;color:var(--muted);text-decoration:none;padding:8px 12px;border:1px solid var(--line);border-radius:8px;transition:all 0.2s}
-                    .nav-link:hover{color:var(--ink);border-color:var(--brand)}
-                  </style></head><body>
-                  <div class="wrap">
-                    <div class="nav-links">
-                      <a href="/home" class="nav-link">Home</a>
-                      <a href="/about" class="nav-link">About</a>
-                      <a href="/data" class="nav-link">Data</a>
-                      <a href="/register" class="nav-link">Register</a>
-                    </div>
-                    <div class="card">
-                      <h1>Log in to EDAP</h1>
-                      <p class="muted">Use your email and password to access member-only features.</p>
-                """ + (error != null ? "<div class=\"error\">" + escapeHtml(error) + "</div>" : "") + """
-                      <form method="POST" action="/auth/login">
-                        <label for="email">Email</label>
-                        <input id="email" type="email" name="email" value=\"""" + escapeHtml(email != null ? email : "") + """\" required />
-                        <div class="actions">
-                          <button class="btn primary" type="submit">Send reset link</button>
-                          <a class="btn" href="/auth/login">Back to login</a>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </body></html>
-                """;
-    }
-
-    private String generateResetPasswordForm(String token, String error) {
-        return """
-                <!doctype html><html lang="en"><head>
-                  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-                  <title>Reset Password · EDAP</title>
-                  <style>
-                    :root{--bg:#0b0c10; --card:#111217; --ink:#e8eaf0; --muted:#99a1b3; --line:#1f2330; --brand:#22c55e; --brand2:#15803d;}
-                    body{margin:0;background:linear-gradient(180deg,#0b0c10,#0e1117);color:var(--ink);
-                         font:15px/1.55 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-                    .wrap{max-width:520px;margin:48px auto;padding:0 18px}
-                    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
-                    label{display:block;margin:12px 0 6px;font-weight:600}
-                    input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0d1017;color:var(--ink);box-sizing:border-box}
                     .btn{padding:12px 16px;border-radius:14px;border:1px solid var(--line);text-decoration:none;color:var(--ink);cursor:pointer;background:var(--card);font-size:15px}
                     .btn.primary{background:linear-gradient(180deg,var(--brand),var(--brand2));border:0;color:white}
                     .error{background:#2a0f12;border:1px solid #522;color:#f8caca;padding:10px;border-radius:12px;margin:10px 0}
@@ -491,7 +442,30 @@ public class IntegratedAuthController {
     private String generateErrorPage(String message) {
         return generateInfoPage("Error", message, "Back to Home", "/home");
     }
-}<input id="email" type="email" name="email" value=\"""" + escapeHtml(email != null ? email : "") + """\" required />
+}:pointer;background:var(--card);font-size:15px}
+        .btn.primary{background:linear-gradient(180deg,var(--brand),var(--brand2));border:0;color:white}
+                    .btn:hover{transform:translateY(-1px)}
+                    .error{background:#2a0f12;border:1px solid #522;color:#f8caca;padding:10px;border-radius:12px;margin:10px 0}
+                    .actions{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+                    .muted{color:var(--muted)}
+                    .nav-links{margin-bottom:20px}
+                    .nav-link{display:inline-block;margin-right:15px;color:var(--muted);text-decoration:none;padding:8px 12px;border:1px solid var(--line);border-radius:8px;transition:all 0.2s}
+                    .nav-link:hover{color:var(--ink);border-color:var(--brand)}
+                  </style></head><body>
+                  <div class="wrap">
+                    <div class="nav-links">
+                      <a href="/home" class="nav-link">Home</a>
+                      <a href="/about" class="nav-link">About</a>
+                      <a href="/data" class="nav-link">Data</a>
+                      <a href="/register" class="nav-link">Register</a>
+                    </div>
+                    <div class="card">
+<h1>Log in to EDAP</h1>
+                      <p class="muted">Use your email and password to access member-only features.</p>
+        """ + (error != null ? "<div class=\"error\">" + escapeHtml(error) + "</div>" : "") + """
+                      <form method="POST" action="/auth/login">
+                        <label for="email">Email</label>
+                        <input id="email" type="email" name="email" value=\"""" + escapeHtml(email != null ? email : "") + """\" required />
 
                         <label for="password">Password</label>
                         <input id="password" type="password" name="password" required />
@@ -588,3 +562,29 @@ input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);ba
         """ + (error != null ? "<div class=\"error\">" + escapeHtml(error) + "</div>" : "") + """
                       <form method="POST" action="/auth/forgot-password">
                         <label for="email">Email</label>
+                        <input id="email" type="email" name="email" value=\"""" + escapeHtml(email != null ? email : "") + """\" required />
+                        <div class="actions">
+                          <button class="btn primary" type="submit">Send reset link</button>
+                          <a class="btn" href="/auth/login">Back to login</a>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </body></html>
+        """;
+    }
+
+    private String generateResetPasswordForm(String token, String error) {
+        return """
+                <!doctype html><html lang="en"><head>
+                  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Reset Password · EDAP</title>
+                  <style>
+                    :root{--bg:#0b0c10; --card:#111217; --ink:#e8eaf0; --muted:#99a1b3; --line:#1f2330; --brand:#22c55e; --brand2:#15803d;}
+body{margin:0;background:linear-gradient(180deg,#0b0c10,#0e1117);color:var(--ink);
+    font:15px/1.55 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+                    .wrap{max-width:520px;margin:48px auto;padding:0 18px}
+                    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+label{display:block;margin:12px 0 6px;font-weight:600}
+input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0d1017;color:var(--ink);box-sizing:border-box}
+                    .btn{padding:12px 16px;border-radius:14px;border:1px solid var(--line);text-decoration:none;color:var(--ink);cursor
