@@ -1,7 +1,7 @@
 package com.maxxenergy.edap.service;
 
 import com.maxxenergy.edap.model.User;
-import com.maxxenergy.edap.repository.UserRepository;
+import com.maxxenergy.edap.repository.InMemoryUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 /**
  * Enhanced service class for user management operations including authentication.
- * Handles user registration, authentication, password management, and user updates.
+ * Uses in-memory storage instead of MongoDB.
  */
 @Service
 public class UserService {
@@ -23,7 +23,7 @@ public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
-    private UserRepository userRepository;
+    private InMemoryUserRepository userRepository;
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
             "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
@@ -73,9 +73,16 @@ public class UserService {
             return null;
         }
 
+        if (user.isAccountLocked()) {
+            logger.warn("Authentication failed: user account is locked: {}", normalizedEmail);
+            return null;
+        }
+
         String providedPasswordHash = hashPassword(password);
         if (!providedPasswordHash.equals(user.getPasswordHash())) {
             logger.warn("Authentication failed: invalid password for user: {}", normalizedEmail);
+            user.incrementFailedLoginAttempts();
+            userRepository.save(user);
             return null;
         }
 
