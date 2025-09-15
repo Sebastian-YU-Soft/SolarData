@@ -1,25 +1,19 @@
 package com.maxxenergy.edap.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.index.Indexed;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import javax.validation.constraints.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Model class for solar data entries submitted by users.
- * Contains comprehensive solar plant performance data.
+ * Uses in-memory storage instead of MongoDB.
  */
-@Document(collection = "solar_data_entries")
 public class SolarDataEntry {
 
-    @Id
     private String id;
 
-    @Indexed
     @NotBlank(message = "User ID is required")
     private String userId;
 
@@ -58,11 +52,9 @@ public class SolarDataEntry {
     @DecimalMin(value = "0.0", message = "Revenue cannot be negative")
     private Double revenue = 0.0; // Revenue generated in dollars
 
-    @CreatedDate
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime timestamp;
 
-    @Indexed
     private boolean isPublic = false; // Whether this data is publicly viewable
 
     private String notes; // Optional notes about the data entry
@@ -70,8 +62,9 @@ public class SolarDataEntry {
     // Calculated fields
     private Double capacityUtilization; // Generation / Capacity * 100
 
-    // Default constructor for MongoDB and JSON deserialization
+    // Default constructor
     public SolarDataEntry() {
+        this.id = UUID.randomUUID().toString();
         this.timestamp = LocalDateTime.now();
         this.temperature = 25.0;
         this.irradiance = 1000.0;
