@@ -1,167 +1,111 @@
 package com.maxxenergy.edap.service;
 
 import com.maxxenergy.edap.model.SolarData;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.util.Map;
 import java.util.HashMap;
 
 /**
- * Service for retrieving public solar data.
- * Handles MongoDB connection and data retrieval for public dashboard.
+ * Service for retrieving public solar data using in-memory demo data.
+ * No external database dependencies required.
  */
 @Service
 public class SolarDataService {
 
     private static final Logger logger = LoggerFactory.getLogger(SolarDataService.class);
 
-    private MongoClient mongoClient;
-
-    @Value("${spring.data.mongodb.uri:mongodb://localhost:27017}")
-    private String mongoUri;
-
-    @Value("${spring.data.mongodb.database:maxxenergy}")
-    private String databaseName;
-
     @PostConstruct
     public void initialize() {
-        logger.info("Initializing SolarDataService with database: {}", databaseName);
-        try {
-            ensureSampleData();
-        } catch (Exception e) {
-            logger.warn("Could not initialize sample data: {}", e.getMessage());
-        }
-    }
-
-    private MongoClient getMongoClient() {
-        if (mongoClient == null) {
-            logger.info("Creating MongoDB client connection to: {}", mongoUri);
-            try {
-                mongoClient = MongoClients.create(mongoUri);
-            } catch (Exception e) {
-                logger.warn("Could not create MongoDB connection: {}", e.getMessage());
-            }
-        }
-        return mongoClient;
-    }
-
-    @PreDestroy
-    public void closeMongoClient() {
-        if (mongoClient != null) {
-            logger.info("Closing MongoDB client connection");
-            mongoClient.close();
-        }
+        logger.info("Initializing SolarDataService with in-memory demo data");
+        logger.info("Solar data will have dynamic variations to simulate real-time updates");
     }
 
     public SolarData getPublicData() {
-        try {
-            MongoClient client = getMongoClient();
-            if (client != null) {
-                MongoDatabase database = client.getDatabase(databaseName);
-                MongoCollection<Document> collection = database.getCollection("solar_plants");
-
-                Document publicPlant = collection.find(new Document("isPublic", true)).first();
-                if (publicPlant != null) {
-                    logger.debug("Found public plant data: {}", publicPlant.getString("plantName"));
-                    return new SolarData(
-                            publicPlant.getString("plantName"),
-                            publicPlant.getDouble("generation"),
-                            publicPlant.getDouble("revenue")
-                    );
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Error fetching data from MongoDB: {}", e.getMessage());
-        }
-
-        logger.info("Returning default demo data");
-        return createDefaultDemoData();
-    }
-
-    private SolarData createDefaultDemoData() {
+        // Create dynamic demo data with realistic variations
         long currentMinute = System.currentTimeMillis() / (1000 * 60);
-        double variation = Math.sin(currentMinute * 0.1) * 0.5;
-        double baseGeneration = 8.5;
-        double baseRevenue = 125000.0;
+        double timeVariation = Math.sin(currentMinute * 0.1) * 0.3;
+        double hourVariation = Math.sin((System.currentTimeMillis() / (1000 * 60 * 60)) * 0.5) * 2.0;
 
-        return new SolarData(
-                "Demo Solar Plant",
-                Math.max(0, baseGeneration + variation),
-                baseRevenue + (variation * 10000)
-        );
-    }
+        double baseGeneration = 12.5;
+        double baseRevenue = 156000.0;
 
-    private void ensureSampleData() {
-        try {
-            MongoClient client = getMongoClient();
-            if (client != null) {
-                MongoDatabase database = client.getDatabase(databaseName);
-                MongoCollection<Document> collection = database.getCollection("solar_plants");
+        // Add some realistic variation based on time of day
+        int hour = java.time.LocalTime.now().getHour();
+        double timeOfDayFactor = 1.0;
 
-                long count = collection.countDocuments();
-                if (count == 0) {
-                    logger.info("No solar plant data found, creating sample data");
-                    createSampleData(collection);
-                } else {
-                    logger.info("Found {} existing solar plant records", count);
-                }
-            }
-        } catch (Exception e) {
-            logger.warn("Could not ensure sample data exists: {}", e.getMessage());
+        if (hour >= 6 && hour <= 18) {
+            // Daytime - higher generation
+            timeOfDayFactor = 0.8 + 0.4 * Math.sin(Math.PI * (hour - 6) / 12);
+        } else {
+            // Nighttime - minimal generation
+            timeOfDayFactor = 0.1;
         }
-    }
 
-    private void createSampleData(MongoCollection<Document> collection) {
-        try {
-            Document publicPlant = new Document()
-                    .append("plantName", "Sunrise Solar Farm")
-                    .append("generation", 12.3)
-                    .append("capacity", 15.0)
-                    .append("efficiency", 82.0)
-                    .append("revenue", 156000.0)
-                    .append("location", "Arizona, USA")
-                    .append("isPublic", true)
-                    .append("createdAt", new java.util.Date());
+        double currentGeneration = Math.max(0,
+                (baseGeneration + timeVariation + hourVariation) * timeOfDayFactor);
+        double currentRevenue = baseRevenue + (timeVariation * 15000) + (hourVariation * 8000);
 
-            collection.insertOne(publicPlant);
-            logger.info("Created sample solar plant data");
-        } catch (Exception e) {
-            logger.warn("Could not create sample data: {}", e.getMessage());
-        }
+        SolarData data = new SolarData("Sunrise Solar Farm", currentGeneration, currentRevenue);
+
+        logger.debug("Generated public solar data: {} MW, ${}",
+                String.format("%.1f", currentGeneration),
+                String.format("%.0f", currentRevenue));
+
+        return data;
     }
 
     public Map<String, Object> getPublicStatistics() {
         Map<String, Object> stats = new HashMap<>();
-        try {
-            MongoClient client = getMongoClient();
-            if (client != null) {
-                // MongoDB logic here
-                stats.put("totalPlants", 1);
-                stats.put("totalGeneration", 8.5);
-                stats.put("totalCapacity", 10.0);
-                stats.put("totalRevenue", 125000.0);
-                stats.put("averageEfficiency", 85.0);
-            } else {
-                // Default stats when MongoDB is not available
-                stats.put("totalPlants", 1);
-                stats.put("totalGeneration", 8.5);
-                stats.put("totalCapacity", 10.0);
-                stats.put("totalRevenue", 125000.0);
-                stats.put("averageEfficiency", 85.0);
-            }
-        } catch (Exception e) {
-            logger.error("Error fetching statistics: {}", e.getMessage());
-            stats.put("error", "Could not fetch statistics");
-        }
+
+        // Generate realistic statistics with some variation
+        long currentHour = System.currentTimeMillis() / (1000 * 60 * 60);
+        double variation = Math.sin(currentHour * 0.1) * 0.1;
+
+        stats.put("totalPlants", 3);
+        stats.put("totalGeneration", Math.round((24.7 + variation * 2) * 10.0) / 10.0);
+        stats.put("totalCapacity", 30.0);
+        stats.put("totalRevenue", Math.round((375000.0 + variation * 25000) * 100.0) / 100.0);
+        stats.put("averageEfficiency", Math.round((82.3 + variation * 3) * 10.0) / 10.0);
+        stats.put("onlinePlants", 3);
+        stats.put("lastUpdated", java.time.Instant.now().toString());
+
+        // Add some seasonal statistics
+        java.time.Month currentMonth = java.time.LocalDate.now().getMonth();
+        double seasonalFactor = getSeasonalFactor(currentMonth);
+        stats.put("seasonalEfficiency", Math.round(seasonalFactor * 85.0 * 10.0) / 10.0);
+
+        logger.debug("Generated public statistics: {} plants, {} MW total",
+                stats.get("totalPlants"), stats.get("totalGeneration"));
+
         return stats;
+    }
+
+    /**
+     * Get seasonal efficiency factor based on current month
+     */
+    private double getSeasonalFactor(java.time.Month month) {
+        switch (month) {
+            case DECEMBER:
+            case JANUARY:
+            case FEBRUARY:
+                return 0.75; // Winter - lower efficiency
+            case MARCH:
+            case APRIL:
+            case MAY:
+                return 0.95; // Spring - good efficiency
+            case JUNE:
+            case JULY:
+            case AUGUST:
+                return 1.1; // Summer - peak efficiency
+            case SEPTEMBER:
+            case OCTOBER:
+            case NOVEMBER:
+                return 0.9; // Fall - good efficiency
+            default:
+                return 1.0;
+        }
     }
 }
