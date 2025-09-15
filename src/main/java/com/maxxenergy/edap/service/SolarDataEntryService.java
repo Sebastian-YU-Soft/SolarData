@@ -1,7 +1,7 @@
 package com.maxxenergy.edap.service;
 
 import com.maxxenergy.edap.model.SolarDataEntry;
-import com.maxxenergy.edap.repository.SolarDataEntryRepository;
+import com.maxxenergy.edap.repository.InMemorySolarDataEntryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 /**
  * Service class for solar data entry operations.
- * Handles data validation, saving, and retrieval.
+ * Uses in-memory storage instead of MongoDB.
  */
 @Service
 public class SolarDataEntryService {
@@ -22,7 +22,7 @@ public class SolarDataEntryService {
     private static final Logger logger = LoggerFactory.getLogger(SolarDataEntryService.class);
 
     @Autowired
-    private SolarDataEntryRepository repository;
+    private InMemorySolarDataEntryRepository repository;
 
     /**
      * Save a new solar data entry with validation
